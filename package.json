@@ -1,0 +1,93 @@
+{
+	"name": "topic-list",
+	"displayName": "topic_list",
+	"description": "",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.29.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onCommand:python123.signIn",
+		"onCommand:python123.signOut",
+		"onCommand:python123.refresh",
+		"onCommand:python123.upload",
+		"onView:topic"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "python123.signIn",
+				"title": "登录"
+			},
+			{
+				"command": "python123.signOut",
+				"title": "退出登录 "
+			},
+			{
+				"command": "python123.refresh",
+				"title": "刷新",
+				"icon": "media/refresh.svg"
+			},
+			{
+				"command": "python123.upload",
+				"title": "上传",
+				"icon": "media/upload-solid.svg"
+			},
+			{
+				"command": "python123.uploadImg",
+				"title": "上传图片"
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "python123.refresh",
+					"when": "view == topic",
+					"group":"navigation"
+				}
+			],
+			"view/item/context":[
+				{
+					"command": "python123.upload",
+					"when":"view == topic && viewItem == Topic ",
+					"group":"inline"
+				}
+			]
+			},
+			"viewsContainers": {
+				"activitybar": [
+					{
+						"id": "python123",
+						"title": "Python 123",
+						"icon": "media/list-ul-solid.svg"
+					}
+				]
+			},
+			"views": {
+				"python123": [
+					{
+						"id": "topic",
+						"name": "专栏"
+					}
+				]
+			}
+		},
+		"scripts": {
+			"vscode:prepublish": "npm run compile",
+			"compile": "tsc -p ./",
+			"watch": "tsc -watch -p ./",
+			"postinstall": "node ./node_modules/vscode/bin/install",
+			"test": "npm run compile && node ./node_modules/vscode/bin/test"
+		},
+		"devDependencies": {
+			"typescript": "^3.3.1",
+			"vscode": "^1.1.28",
+			"tslint": "^5.12.1",
+			"@types/node": "^10.12.21",
+			"@types/mocha": "^2.2.42"
+		}
+	}
