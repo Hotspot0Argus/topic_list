@@ -20,13 +20,16 @@ export function activate(context: vscode.ExtensionContext) {
 	let refresh = vscode.commands.registerCommand('python123.refresh', () => {
 		topicListProvider.refresh();
 	});
-	let upload = vscode.commands.registerCommand('python123.upload', (topic: Topic) => {
+	let upload = vscode.commands.registerCommand('python123.upload', async (topic: Topic) => {
 		// todo: 检测身份，获取当前活动窗口，上传数据
 		if (User.user.isSignIn(context)) {
 			const window = vscode.window.activeTextEditor;
-			
-			if(window && window.document.languageId === "markdown"){
-				console.log(window);
+			if (window && window.document.languageId === "markdown") {
+				//todo: input info
+				const doc = await vscode.workspace.openTextDocument(window.document.uri.fsPath);
+				const fileContent = doc.getText();
+				//todo: send and get articleID
+				//todo:put article in topic 
 			}
 			// topicListProvider.refresh();
 		}
@@ -36,14 +39,14 @@ export function activate(context: vscode.ExtensionContext) {
 		// todo: 检测身份，上传图片,在控制台里显示图片路径
 		if (User.user.isSignIn(context)) {
 			const uri = '';
-			_terminal.sendText('echo '+ uri);
+			_terminal.sendText('echo ' + uri);
 			// topicListProvider.refresh();
 		}
 
 	});
 
 	const topicListProvider: TopicListProvider = new TopicListProvider(context);
-	context.subscriptions.push(signIn, signOut, refresh,uploadImg,
+	context.subscriptions.push(signIn, signOut, refresh, uploadImg,
 		vscode.window.registerTreeDataProvider("topic", topicListProvider));
 	topicListProvider.refresh();
 }

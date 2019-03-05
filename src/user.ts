@@ -10,7 +10,7 @@ class User {
         try {
             const email: string | undefined = await vscode.window.showInputBox({
                 prompt: "输入账号邮箱",
-                validateInput: (s: string): string | undefined => s && s.trim() ? undefined : "邮箱不能能为空",
+                validateInput: (s: string): string | undefined => s && s.trim() ? undefined : "邮箱不能为空",
             });
             if (!email) {
                 return ;
@@ -58,6 +58,35 @@ class User {
     public isSignIn(context: vscode.ExtensionContext):Boolean{
         const user:any = context.globalState.get('token');
         return !!user && !!user.token && !!user.email;
+    }
+    public async inputDocInfo(title:string){
+        try{
+            const articleTitle: string | undefined = await vscode.window.showInputBox({
+                prompt: "输入文章标题",
+                validateInput: (s: string): string | undefined => s && s.trim() ? undefined : "文章标题不能为空",
+            });
+            if (!articleTitle) {
+                return ;
+            }
+            const subtitle: string | undefined = await vscode.window.showInputBox({
+                prompt: "输入文章副标题",
+                validateInput: (s: string): string | undefined => s && s.trim() ? undefined : "文章副标题不能为空",
+            });
+            if (!subtitle) {
+                return ;
+            }
+            const penName: string | undefined = await vscode.window.showInputBox({
+                prompt: "输入作者名称",
+                validateInput: (s: string): string | undefined => s && s.trim() ? undefined : "作者名称不能为空",
+            });
+            if (!penName) {
+                return ;
+            }
+            
+        }catch(err){
+            console.log(err);
+        }
+
     }
 }
 export const user: User = new User();

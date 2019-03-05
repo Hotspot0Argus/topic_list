@@ -47,47 +47,50 @@
 				{
 					"command": "python123.refresh",
 					"when": "view == topic",
-					"group":"navigation"
+					"group": "navigation"
 				}
 			],
-			"view/item/context":[
+			"view/item/context": [
 				{
 					"command": "python123.upload",
-					"when":"view == topic && viewItem == Topic ",
-					"group":"inline"
+					"when": "view == topic && viewItem == Topic ",
+					"group": "inline"
 				}
 			]
-			},
-			"viewsContainers": {
-				"activitybar": [
-					{
-						"id": "python123",
-						"title": "Python 123",
-						"icon": "media/list-ul-solid.svg"
-					}
-				]
-			},
-			"views": {
-				"python123": [
-					{
-						"id": "topic",
-						"name": "专栏"
-					}
-				]
-			}
 		},
-		"scripts": {
-			"vscode:prepublish": "npm run compile",
-			"compile": "tsc -p ./",
-			"watch": "tsc -watch -p ./",
-			"postinstall": "node ./node_modules/vscode/bin/install",
-			"test": "npm run compile && node ./node_modules/vscode/bin/test"
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "python123",
+					"title": "Python 123",
+					"icon": "media/list-ul-solid.svg"
+				}
+			]
 		},
-		"devDependencies": {
-			"typescript": "^3.3.1",
-			"vscode": "^1.1.28",
-			"tslint": "^5.12.1",
-			"@types/node": "^10.12.21",
-			"@types/mocha": "^2.2.42"
+		"views": {
+			"python123": [
+				{
+					"id": "topic",
+					"name": "专栏"
+				}
+			]
 		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"test": "npm run compile && node ./node_modules/vscode/bin/test"
+	},
+	"devDependencies": {
+		"typescript": "^3.3.1",
+		"vscode": "^1.1.28",
+		"tslint": "^5.12.1",
+		"@types/node": "^10.12.21",
+		"@types/mocha": "^2.2.42"
+	},
+	"dependencies": {
+		"@types/lodash": "^4.14.122"
 	}
+}

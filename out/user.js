@@ -17,7 +17,7 @@ class User {
             try {
                 const email = yield vscode.window.showInputBox({
                     prompt: "输入账号邮箱",
-                    validateInput: (s) => s && s.trim() ? undefined : "邮箱不能能为空",
+                    validateInput: (s) => s && s.trim() ? undefined : "邮箱不能为空",
                 });
                 if (!email) {
                     return;
@@ -67,6 +67,36 @@ class User {
     isSignIn(context) {
         const user = context.globalState.get('token');
         return !!user && !!user.token && !!user.email;
+    }
+    inputDocInfo(title) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const articleTitle = yield vscode.window.showInputBox({
+                    prompt: "输入文章标题",
+                    validateInput: (s) => s && s.trim() ? undefined : "文章标题不能为空",
+                });
+                if (!articleTitle) {
+                    return;
+                }
+                const subtitle = yield vscode.window.showInputBox({
+                    prompt: "输入文章副标题",
+                    validateInput: (s) => s && s.trim() ? undefined : "文章副标题不能为空",
+                });
+                if (!subtitle) {
+                    return;
+                }
+                const penName = yield vscode.window.showInputBox({
+                    prompt: "输入作者名称",
+                    validateInput: (s) => s && s.trim() ? undefined : "作者名称不能为空",
+                });
+                if (!penName) {
+                    return;
+                }
+            }
+            catch (err) {
+                console.log(err);
+            }
+        });
     }
 }
 exports.user = new User();
