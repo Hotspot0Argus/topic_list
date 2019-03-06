@@ -27,15 +27,11 @@ class TopicListProvider {
         }
         if (!element) {
             return [
-                new Column('我的专栏', 'my_topic'),
-                new Column('所有', 'all')
+                new Column('所有专栏', 'all')
             ];
         }
         if (element.id === 'all') {
             return this.topicsData;
-        }
-        if (element.id === 'my_topic') {
-            return this.myTopicsData;
         }
         else {
             return element.docs;
@@ -61,17 +57,6 @@ class TopicListProvider {
                 contextValue: element.id.substr(0, 6) === 'topic$' ? 'Topic' : 'Column'
             };
         }
-        else if (element.id === 'sign_out') {
-            return {
-                label: element.label,
-                id: element.id,
-                collapsibleState: vscode.TreeItemCollapsibleState.None,
-                command: {
-                    command: "python123.signOut",
-                    title: "退出登录",
-                },
-            };
-        }
         else if (element.id === 'upload_img') {
             return {
                 label: element.label,
@@ -87,7 +72,8 @@ class TopicListProvider {
             return {
                 label: element.label,
                 id: element.id,
-                collapsibleState: vscode.TreeItemCollapsibleState.None
+                collapsibleState: vscode.TreeItemCollapsibleState.None,
+                contextValue: 'Doc'
             };
         }
         return {};

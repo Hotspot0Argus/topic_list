@@ -35,11 +35,31 @@
 			{
 				"command": "python123.upload",
 				"title": "上传",
-				"icon": "media/upload-solid.svg"
+				"icon": "media/upload.svg"
 			},
 			{
 				"command": "python123.uploadImg",
 				"title": "上传图片"
+			},
+			{
+				"command": "python123.newFolderInColumn",
+				"title": "新建专栏",
+				"icon": "media/addFolder.svg"
+			},
+			{
+				"command": "python123.newFolderInTopic",
+				"title": "新建目录",
+				"icon": "media/addFolder.svg"
+			},
+			{
+				"command": "python123.deleteFolder",
+				"title": "删除目录",
+				"icon": "media/delete.svg"
+			},
+			{
+				"command": "python123.deleteDoc",
+				"title": "删除文件",
+				"icon": "media/delete.svg"
 			}
 		],
 		"menus": {
@@ -48,12 +68,37 @@
 					"command": "python123.refresh",
 					"when": "view == topic",
 					"group": "navigation"
+				},
+				{
+					"command": "python123.signOut",
+					"when": "view == topic"
 				}
 			],
 			"view/item/context": [
 				{
+					"command": "python123.newFolderInTopic",
+					"when": "view == topic && viewItem == Topic ",
+					"group": "inline"
+				},
+				{
 					"command": "python123.upload",
 					"when": "view == topic && viewItem == Topic ",
+					"group": "inline"
+				},
+				{
+					"command": "python123.deleteFolder",
+					"when": "view == topic && viewItem == Topic ",
+					"group": "inline"
+				},
+				
+				{
+					"command": "python123.newFolderInColumn",
+					"when": "view == topic && viewItem == Column ",
+					"group": "inline"
+				},
+				{
+					"command": "python123.deleteDoc",
+					"when": "view == topic && viewItem == Doc ",
 					"group": "inline"
 				}
 			]
