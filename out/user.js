@@ -68,33 +68,36 @@ class User {
         const user = context.globalState.get('token');
         return !!user && !!user.token && !!user.email;
     }
-    inputDocInfo(title) {
+    token(context) {
+        const user = context.globalState.get('token');
+        return user.token;
+    }
+    inputInfo(list) {
         return __awaiter(this, void 0, void 0, function* () {
+            let result = '{';
             try {
-                const articleTitle = yield vscode.window.showInputBox({
-                    prompt: "输入文章标题",
-                    validateInput: (s) => s && s.trim() ? undefined : "文章标题不能为空",
+                for (let i = 0; i < list.length - 1; i++) {
+                    const content = yield vscode.window.showInputBox({
+                        prompt: "输入" + list[i].label,
+                        validateInput: (s) => s && s.trim() ? undefined : list[i].label + "不能为空",
+                    });
+                    if (!content) {
+                        return;
+                    }
+                    result += (list[i].field + ':' + content + ',');
+                }
+                const content = yield vscode.window.showInputBox({
+                    prompt: "输入" + list[list.length - 1].label,
+                    validateInput: (s) => s && s.trim() ? undefined : list[list.length - 1].label + "不能为空",
                 });
-                if (!articleTitle) {
+                if (!content) {
                     return;
                 }
-                const subtitle = yield vscode.window.showInputBox({
-                    prompt: "输入文章副标题",
-                    validateInput: (s) => s && s.trim() ? undefined : "文章副标题不能为空",
-                });
-                if (!subtitle) {
-                    return;
-                }
-                const penName = yield vscode.window.showInputBox({
-                    prompt: "输入作者名称",
-                    validateInput: (s) => s && s.trim() ? undefined : "作者名称不能为空",
-                });
-                if (!penName) {
-                    return;
-                }
+                result += (list[list.length - 1].field + ':' + content + '}');
+                return JSON.parse(result);
             }
             catch (err) {
-                console.log(err);
+                return { err };
             }
         });
     }

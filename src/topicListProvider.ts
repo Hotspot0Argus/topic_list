@@ -2,35 +2,37 @@ import * as vscode from 'vscode';
 const request = require('request');
 import { user } from './user';
 import { eventManager } from './eventManager';
+import { NodeListData, DocNode } from './docNode';
 
-export class TopicListProvider implements vscode.TreeDataProvider<Topic>{
-    private topicsData: Topic[] = [];
-    private myTopicsData: Topic[] = [];
+export class TopicListProvider implements vscode.TreeDataProvider<DocNode>{
+    private topicsData: DocNode[] = [];
+    private myTopicsData: DocNode[] = [];
     constructor(private context: vscode.ExtensionContext) {
     }
-    getChildren(element?: Topic): vscode.ProviderResult<any[]> {
+    getChildren(element?: DocNode): vscode.ProviderResult<any[]> {
         if (!user.isSignIn(this.context)) {
             return [
-                new Topic('登录', 'no_user')
+                new DocNode('no_user', '登录', 'root', 'folder')
             ];
         }
         if (!element) {
             return [
-                new Column('所有专栏','all')
+                new DocNode('all', '所有专栏', 'root', 'folder')
             ];
-        } 
-        if(element.id === 'all'){
+        }
+        if (element.id === 'all') {
             return this.topicsData;
-        } 
+        }
         else {
-            return element.docs;
+            return element.children;
         }
     }
-    getTreeItem(element: Topic): vscode.TreeItem | Thenable<vscode.TreeItem> {
+    getTreeItem(element: DocNode): myTreeItem | Thenable<myTreeItem> {
         if (element.id === 'no_user') {
             return {
-                label: element.label,
+                label: element.name,
                 id: element.id,
+                parent: 'root',
                 collapsibleState: vscode.TreeItemCollapsibleState.None,
                 command: {
                     command: "python123.signIn",
@@ -38,32 +40,41 @@ export class TopicListProvider implements vscode.TreeDataProvider<Topic>{
                 },
             };
         }
-        else if (element.id ==='all'||element.id === 'my_topic'|| element.id.substr(0, 6) === 'topic$') {
+        else if (element.id === 'all' || element.type === 'folder') {
             return {
-                label: element.label,
+                label: element.name,
                 id: element.id,
+                parent:element.parent,
                 collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-                contextValue: element.id.substr(0, 6) === 'topic$'?'Topic':'Column'
+                contextValue: 'folder'
             };
         } else if (element.id === 'upload_img') {
             return {
-                label: element.label,
+                label: element.name,
                 id: element.id,
+                parent:element.parent,
                 collapsibleState: vscode.TreeItemCollapsibleState.None,
                 command: {
                     command: "python123.uploadImg",
                     title: "上传图片",
                 },
             };
-        } else if (element.id.substr(0, 4) === 'doc$') {
+        } else if (element.type === 'article') {
             return {
-                label: element.label,
+                label: element.name,
                 id: element.id,
+                parent:element.parent,
                 collapsibleState: vscode.TreeItemCollapsibleState.None,
-                contextValue:'Doc'
+                contextValue: 'article'
             };
         }
-        return {};
+        return {
+            label: 'ERR',
+            id: 'ERR',
+            parent:'ERR',
+            collapsibleState: vscode.TreeItemCollapsibleState.None,
+            contextValue: 'ERR'
+        };
     }
 
     public async refresh(): Promise<void> {
@@ -90,25 +101,28 @@ export class TopicListProvider implements vscode.TreeDataProvider<Topic>{
             }, async (progress) => {
                 progress.report({ increment: 0 });
                 for (let topic of topics) {
-                    const articleNodes: Doc[] = [];
-                    let articles: any = await app.getInfoFromUri('https://www.python123.io/api/v1/topics/' + topic.uri + '/articles');
+                    const articleNodes: DocNode[] = [];
+                    let nodes: any = await app.getInfoFromUri('https://www.python123.io/api/v1/topics/' + topic.uri + '/articles');
 
-                    JSON.parse(articles).data.forEach((aritcle: any) => {
-                        articleNodes.push(new Doc(aritcle.title, 'doc$' + aritcle._id));
+                    JSON.parse(nodes).data.forEach((node: any) => {
+                        articleNodes.push(new DocNode(node._id,node.title,node.parent,node.type));
                     });
+                    articleNodes.push(new DocNode(topic._id,topic.name,'root','folder',[]))
+                    const treeData = new NodeListData();
+                    treeData.getNodeTree(articleNodes)
                     progress.report({
                         increment: increment,
                         message: topic.name
                     });
 
-                    app.topicsData.push(new Topic(topic.name, 'topic$' + topic.uri, articleNodes));
+                    app.topicsData.push(treeData.getNodeTree(articleNodes));
                 }
                 return new Promise(resolve => {
                     resolve();
                 });
             });
-            this.topicsData.push(new Topic('上传图片', 'upload_img'));
-            this.topicsData.push(new Topic('退出登录', 'sign_out'));
+            this.topicsData.push(new DocNode('upload_img','上传图片','root','folder'));
+            this.topicsData.push(new DocNode('sign_out','退出登录','root','folder' ));
         } catch (err) {
             vscode.window.showErrorMessage(err);
         }
@@ -140,30 +154,11 @@ export class TopicListProvider implements vscode.TreeDataProvider<Topic>{
     }
 }
 
-class Column{
-    public id: string;
-    public label: string;
-    constructor(label: string, id: string) {
-        this.id = id;
-        this.label = label;
-    }
-}
-
-export class Topic {
-    public id: string;
-    public label: string;
-    public docs: Doc[] | undefined;
-    constructor(label: string, id: string, docs?: Doc[]) {
-        this.id = id;
-        this.label = label;
-        this.docs = docs;
-    }
-}
-class Doc {
-    public id: string;
-    public label: string;
-    constructor(label: string, id: string) {
-        this.id = id;
-        this.label = label;
-    }
+class myTreeItem implements vscode.TreeItem {
+    public label: string = '';
+    public id: string = '';
+    public parent: string = '';
+    public contextValue?: string = '';
+    public collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None;
+    public command?: vscode.Command;
 }

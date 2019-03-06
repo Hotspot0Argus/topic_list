@@ -14,6 +14,11 @@
 		"onCommand:python123.signOut",
 		"onCommand:python123.refresh",
 		"onCommand:python123.upload",
+		"onCommand:python123.uploadImg",
+		"onCommand:python123.newFolderInColumn",
+		"onCommand:python123.newFolderInTopic",
+		"onCommand:python123.deleteFolder",
+		"onCommand:python123.deleteDoc",
 		"onView:topic"
 	],
 	"main": "./out/extension.js",

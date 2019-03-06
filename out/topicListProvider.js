@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
 const request = require('request');
 const user_1 = require("./user");
+const docNode_1 = require("./docNode");
 class TopicListProvider {
     constructor(context) {
         this.context = context;
@@ -22,26 +23,27 @@ class TopicListProvider {
     getChildren(element) {
         if (!user_1.user.isSignIn(this.context)) {
             return [
-                new Topic('登录', 'no_user')
+                new docNode_1.DocNode('no_user', '登录', 'root', 'folder')
             ];
         }
         if (!element) {
             return [
-                new Column('所有专栏', 'all')
+                new docNode_1.DocNode('all', '所有专栏', 'root', 'folder')
             ];
         }
         if (element.id === 'all') {
             return this.topicsData;
         }
         else {
-            return element.docs;
+            return element.children;
         }
     }
     getTreeItem(element) {
         if (element.id === 'no_user') {
             return {
-                label: element.label,
+                label: element.name,
                 id: element.id,
+                parent: 'root',
                 collapsibleState: vscode.TreeItemCollapsibleState.None,
                 command: {
                     command: "python123.signIn",
@@ -49,18 +51,20 @@ class TopicListProvider {
                 },
             };
         }
-        else if (element.id === 'all' || element.id === 'my_topic' || element.id.substr(0, 6) === 'topic$') {
+        else if (element.id === 'all' || element.type === 'folder') {
             return {
-                label: element.label,
+                label: element.name,
                 id: element.id,
+                parent: element.parent,
                 collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-                contextValue: element.id.substr(0, 6) === 'topic$' ? 'Topic' : 'Column'
+                contextValue: 'folder'
             };
         }
         else if (element.id === 'upload_img') {
             return {
-                label: element.label,
+                label: element.name,
                 id: element.id,
+                parent: element.parent,
                 collapsibleState: vscode.TreeItemCollapsibleState.None,
                 command: {
                     command: "python123.uploadImg",
@@ -68,15 +72,22 @@ class TopicListProvider {
                 },
             };
         }
-        else if (element.id.substr(0, 4) === 'doc$') {
+        else if (element.type === 'article') {
             return {
-                label: element.label,
+                label: element.name,
                 id: element.id,
+                parent: element.parent,
                 collapsibleState: vscode.TreeItemCollapsibleState.None,
-                contextValue: 'Doc'
+                contextValue: 'article'
             };
         }
-        return {};
+        return {
+            label: 'ERR',
+            id: 'ERR',
+            parent: 'ERR',
+            collapsibleState: vscode.TreeItemCollapsibleState.None,
+            contextValue: 'ERR'
+        };
     }
     refresh() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -105,22 +116,25 @@ class TopicListProvider {
                     progress.report({ increment: 0 });
                     for (let topic of topics) {
                         const articleNodes = [];
-                        let articles = yield app.getInfoFromUri('https://www.python123.io/api/v1/topics/' + topic.uri + '/articles');
-                        JSON.parse(articles).data.forEach((aritcle) => {
-                            articleNodes.push(new Doc(aritcle.title, 'doc$' + aritcle._id));
+                        let nodes = yield app.getInfoFromUri('https://www.python123.io/api/v1/topics/' + topic.uri + '/articles');
+                        JSON.parse(nodes).data.forEach((node) => {
+                            articleNodes.push(new docNode_1.DocNode(node._id, node.title, node.parent, node.type));
                         });
+                        articleNodes.push(new docNode_1.DocNode(topic._id, topic.name, 'root', 'folder', []));
+                        const treeData = new docNode_1.NodeListData();
+                        treeData.getNodeTree(articleNodes);
                         progress.report({
                             increment: increment,
                             message: topic.name
                         });
-                        app.topicsData.push(new Topic(topic.name, 'topic$' + topic.uri, articleNodes));
+                        app.topicsData.push(treeData.getNodeTree(articleNodes));
                     }
                     return new Promise(resolve => {
                         resolve();
                     });
                 }));
-                this.topicsData.push(new Topic('上传图片', 'upload_img'));
-                this.topicsData.push(new Topic('退出登录', 'sign_out'));
+                this.topicsData.push(new docNode_1.DocNode('upload_img', '上传图片', 'root', 'folder'));
+                this.topicsData.push(new docNode_1.DocNode('sign_out', '退出登录', 'root', 'folder'));
             }
             catch (err) {
                 vscode.window.showErrorMessage(err);
@@ -159,24 +173,13 @@ class TopicListProvider {
     }
 }
 exports.TopicListProvider = TopicListProvider;
-class Column {
-    constructor(label, id) {
-        this.id = id;
-        this.label = label;
-    }
-}
-class Topic {
-    constructor(label, id, docs) {
-        this.id = id;
-        this.label = label;
-        this.docs = docs;
-    }
-}
-exports.Topic = Topic;
-class Doc {
-    constructor(label, id) {
-        this.id = id;
-        this.label = label;
+class myTreeItem {
+    constructor() {
+        this.label = '';
+        this.id = '';
+        this.parent = '';
+        this.contextValue = '';
+        this.collapsibleState = vscode.TreeItemCollapsibleState.None;
     }
 }
 //# sourceMappingURL=topicListProvider.js.map
