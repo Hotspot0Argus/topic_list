@@ -17,8 +17,7 @@
 		"onCommand:python123.uploadImg",
 		"onCommand:python123.newFolderInColumn",
 		"onCommand:python123.newFolderInTopic",
-		"onCommand:python123.deleteFolder",
-		"onCommand:python123.deleteDoc",
+		"onCommand:python123.deleteNode",
 		"onView:topic"
 	],
 	"main": "./out/extension.js",
@@ -57,14 +56,19 @@
 				"icon": "media/addFolder.svg"
 			},
 			{
-				"command": "python123.deleteFolder",
-				"title": "删除目录",
+				"command": "python123.deleteNode",
+				"title": "删除当前项",
 				"icon": "media/delete.svg"
 			},
 			{
-				"command": "python123.deleteDoc",
-				"title": "删除文件",
-				"icon": "media/delete.svg"
+				"command": "python123.editFolder",
+				"title": "编辑节点名称",
+				"icon": "media/edit.svg"
+			},
+			{
+				"command": "python123.editArticle",
+				"title": "编辑文章",
+				"icon": "media/edit.svg"
 			}
 		],
 		"menus": {
@@ -82,28 +86,52 @@
 			"view/item/context": [
 				{
 					"command": "python123.newFolderInTopic",
-					"when": "view == topic && viewItem == Topic ",
+					"when": "view == topic && viewItem == folder",
+					"group": "inline"
+				},
+				{
+					"command": "python123.newFolderInTopic",
+					"when": "view == topic && viewItem == topic",
 					"group": "inline"
 				},
 				{
 					"command": "python123.upload",
-					"when": "view == topic && viewItem == Topic ",
+					"when": "view == topic && viewItem == folder",
 					"group": "inline"
 				},
 				{
-					"command": "python123.deleteFolder",
-					"when": "view == topic && viewItem == Topic ",
+					"command": "python123.upload",
+					"when": "view == topic && viewItem == topic",
 					"group": "inline"
 				},
-				
+				{
+					"command": "python123.deleteNode",
+					"when": "view == topic && viewItem == folder ",
+					"group": "inline"
+				},
+				{
+					"command": "python123.deleteNode",
+					"when": "view == topic && viewItem == topic ",
+					"group": "inline"
+				},
+				{
+					"command": "python123.deleteNode",
+					"when": "view == topic && viewItem == article ",
+					"group": "inline"
+				},
 				{
 					"command": "python123.newFolderInColumn",
-					"when": "view == topic && viewItem == Column ",
+					"when": "view == topic && viewItem == root ",
 					"group": "inline"
 				},
 				{
-					"command": "python123.deleteDoc",
-					"when": "view == topic && viewItem == Doc ",
+					"command": "python123.editFolder",
+					"when": "view == topic && viewItem == folder ",
+					"group": "inline"
+				},
+				{
+					"command": "python123.editArticle",
+					"when": "view == topic && viewItem == article ",
 					"group": "inline"
 				}
 			]
@@ -141,6 +169,9 @@
 		"@types/mocha": "^2.2.42"
 	},
 	"dependencies": {
-		"@types/lodash": "^4.14.122"
+		"@types/jwt-decode": "^2.2.1",
+		"@types/lodash": "^4.14.122",
+		"jwt-decode": "^2.2.0",
+		"lodash": "^4.17.11"
 	}
 }

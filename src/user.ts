@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { appendFile } from 'fs';
 const request = require('request');
 const { eventManager } = require('./eventManager');
+import * as jwtDecode from 'jwt-decode';
 
 class User {
     public async signIn(): Promise<void> {
@@ -23,7 +24,7 @@ class User {
             }
             request({
                 method: 'PUT',
-                uri: 'https://python123.io/api/v1/session',
+                uri: 'http://localhost:8080/api/v1/session',
                 headers: {
                     "content-type": "application/json",
                 },
@@ -37,7 +38,9 @@ class User {
                 } else if (request) {
                     if (request.statusCode === 201) {
                         vscode.window.showInformationMessage('登录成功！请等待加载完毕');
-                        eventManager.call('token', { email: email, token: JSON.parse(body).data.token });
+                        let decode: any = jwtDecode(JSON.parse(body).data.token);
+                        decode = decode.data;
+                        eventManager.call('token', { email: decode.email, token: JSON.parse(body).data.token, name: decode.name, id: decode.id });
                     } else {
                         vscode.window.showErrorMessage('登录失败，' + request.message);
                     }
@@ -51,6 +54,7 @@ class User {
     public signOut(context: vscode.ExtensionContext) {
         context.globalState.update('token', {});
         vscode.window.showInformationMessage('退出成功！');
+        eventManager.call('token', {});
     }
     public isSignIn(context: vscode.ExtensionContext): Boolean {
         const user: any = context.globalState.get('token');
@@ -59,6 +63,10 @@ class User {
     public token(context: vscode.ExtensionContext) {
         const user: any = context.globalState.get('token');
         return user.token;
+    }
+    public id(context: vscode.ExtensionContext) {
+        const user: any = context.globalState.get('token');
+        return user.id;
     }
     public async inputInfo(list: any[]) {
         let result = '{';
@@ -71,7 +79,7 @@ class User {
                 if (!content) {
                     return;
                 }
-                result += (list[i].field + ':' + content + ',');
+                result += ('"'+list[i].field + '":"' + content + '",');
             }
             const content: string | undefined = await vscode.window.showInputBox({
                 prompt: "输入" + list[list.length - 1].label,
@@ -80,8 +88,8 @@ class User {
             if (!content) {
                 return;
             }
-            result += (list[list.length - 1].field + ':' + content + '}');
-
+            result += ('"'+list[list.length - 1].field + '":"'+ content + '"}');
+            console.log(result);
             return JSON.parse(result);
 
         } catch (err) {

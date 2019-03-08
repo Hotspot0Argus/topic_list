@@ -1,11 +1,11 @@
 const request = require('request');
 import * as vscode from 'vscode';
-import {user} from './user';
+import { user } from './user';
+const { eventManager } = require('./eventManager');
 
 class HttpRequest {
 
     public async get(context: vscode.ExtensionContext, uri: string): Promise<any> {
-        const app = this;
         try {
             return new Promise((resolve, reject) => {
                 request({
@@ -13,7 +13,7 @@ class HttpRequest {
                     uri: uri,
                     headers: {
                         "content-type": "application/json",
-                        "authorization": user.token(context)
+                        "authorization": 'Bearer ' + user.token(context)
                     }
                 }, (err: any, request: any, body: any) => {
                     if (err) {
@@ -27,30 +27,25 @@ class HttpRequest {
             return 'Err';
         }
     }
-    public async post(context: vscode.ExtensionContext, uri: string,body:object): Promise<any> {
-        const app = this;
+    public async send(context: vscode.ExtensionContext, options:any): Promise<any> {
         try {
             return new Promise((resolve, reject) => {
-                request({
-                    method: 'POST',
-                    uri: uri,
-                    headers: {
-                        "content-type": "application/json",
-                        "authorization": user.token(context)
-                    },
-                    body:body
-                }, (err: any, request: any, body: any) => {
+                request(options, (err: any, request: any, body: any) => {
                     if (err) {
                         reject(err);
+                    }else if (request.statusCode === 401 && body.message === 'TokenInvalid') {
+                        user.signOut(context);
+                        reject('登录信息失效');
+                        vscode.window.showWarningMessage('登录信息失效,请重新登陆');
                     } else {
                         resolve(request);
                     }
                 });
             });
         } catch (err) {
+            console.log(err);
             return 'Err';
         }
     }
-
 }
 export const httpRequest: HttpRequest = new HttpRequest();

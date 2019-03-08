@@ -12,6 +12,8 @@ const vscode = require("vscode");
 const request = require('request');
 const user_1 = require("./user");
 const docNode_1 = require("./docNode");
+const _ = require("lodash");
+const httpRequest_1 = require("./httpRequest");
 class TopicListProvider {
     constructor(context) {
         this.context = context;
@@ -23,12 +25,13 @@ class TopicListProvider {
     getChildren(element) {
         if (!user_1.user.isSignIn(this.context)) {
             return [
-                new docNode_1.DocNode('no_user', '登录', 'root', 'folder')
+                new docNode_1.DocNode('no_user', '登录', 'root', 'folder', user_1.user.id(this.context), '')
             ];
         }
         if (!element) {
             return [
-                new docNode_1.DocNode('all', '所有专栏', 'root', 'folder')
+                new docNode_1.DocNode('upload_img', '上传图片', 'root', 'folder', user_1.user.id(this.context), ''),
+                new docNode_1.DocNode('all', '所有专栏', 'root', 'column', user_1.user.id(this.context), '')
             ];
         }
         if (element.id === 'all') {
@@ -39,11 +42,14 @@ class TopicListProvider {
         }
     }
     getTreeItem(element) {
+        const app = this;
         if (element.id === 'no_user') {
             return {
                 label: element.name,
                 id: element.id,
                 parent: 'root',
+                owner: element.owner,
+                topic: '',
                 collapsibleState: vscode.TreeItemCollapsibleState.None,
                 command: {
                     command: "python123.signIn",
@@ -51,20 +57,13 @@ class TopicListProvider {
                 },
             };
         }
-        else if (element.id === 'all' || element.type === 'folder') {
-            return {
-                label: element.name,
-                id: element.id,
-                parent: element.parent,
-                collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-                contextValue: 'folder'
-            };
-        }
         else if (element.id === 'upload_img') {
             return {
                 label: element.name,
                 id: element.id,
                 parent: element.parent,
+                owner: element.owner,
+                topic: '',
                 collapsibleState: vscode.TreeItemCollapsibleState.None,
                 command: {
                     command: "python123.uploadImg",
@@ -72,22 +71,49 @@ class TopicListProvider {
                 },
             };
         }
+        else if (element.type === 'folder' || element.id === 'all') {
+            return {
+                label: element.name,
+                id: element.id,
+                parent: element.parent,
+                owner: element.owner,
+                topic: element.topic,
+                collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+                contextValue: this.getNodeType(element)
+            };
+        }
         else if (element.type === 'article') {
             return {
                 label: element.name,
                 id: element.id,
                 parent: element.parent,
+                owner: element.owner,
+                topic: element.topic,
                 collapsibleState: vscode.TreeItemCollapsibleState.None,
-                contextValue: 'article'
+                contextValue: element.owner.toString() === user_1.user.id(app.context) ? 'article' : 'article&other'
             };
         }
         return {
             label: 'ERR',
             id: 'ERR',
             parent: 'ERR',
+            owner: 'ERR',
+            topic: 'ERR',
             collapsibleState: vscode.TreeItemCollapsibleState.None,
             contextValue: 'ERR'
         };
+    }
+    getNodeType(element) {
+        if (element.id === 'all') {
+            return 'root';
+        }
+        if (element.topic === element.id && element.owner.toString() === user_1.user.id(this.context)) {
+            return 'topic';
+        }
+        if (element.owner.toString() === user_1.user.id(this.context)) {
+            return 'folder';
+        }
+        return 'folder&other';
     }
     refresh() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -105,39 +131,62 @@ class TopicListProvider {
             this.topicsData = [];
             const app = this;
             try {
-                const topicList = yield this.getInfoFromUri('https://www.python123.io/api/v1/topics/public');
-                const topics = JSON.parse(topicList).data;
-                const increment = 100 / topics.length;
-                yield vscode.window.withProgress({
-                    location: vscode.ProgressLocation.Notification,
-                    title: "正在加载 ",
-                    cancellable: false
-                }, (progress) => __awaiter(this, void 0, void 0, function* () {
-                    progress.report({ increment: 0 });
-                    for (let topic of topics) {
-                        const articleNodes = [];
-                        let nodes = yield app.getInfoFromUri('https://www.python123.io/api/v1/topics/' + topic.uri + '/articles');
-                        JSON.parse(nodes).data.forEach((node) => {
-                            articleNodes.push(new docNode_1.DocNode(node._id, node.title, node.parent, node.type));
+                const result = yield httpRequest_1.httpRequest.get(this.context, 'http://localhost:8080/api/v1/topics/owned');
+                if (result.statusCode === 200) {
+                    const topics = JSON.parse(result.body);
+                    const topicsList = topics.data;
+                    const increment = 100 / topicsList.length;
+                    yield vscode.window.withProgress({
+                        location: vscode.ProgressLocation.Notification,
+                        title: "正在加载 ",
+                        cancellable: false
+                    }, (progress) => __awaiter(this, void 0, void 0, function* () {
+                        progress.report({ increment: 0 });
+                        for (let topic of topicsList) {
+                            let result = yield httpRequest_1.httpRequest.get(this.context, 'http://localhost:8080/api/v1/topics/' + topic.uri + '/articles');
+                            if (result.statusCode === 200 && JSON.parse(result.body).data.contents) {
+                                const contents = JSON.parse(result.body).data.contents;
+                                const articles = JSON.parse(result.body).data.articles;
+                                contents.forEach((content) => {
+                                    if (content.type === 'article') {
+                                        const article = _.find(articles, { _id: content._id });
+                                        if (article) {
+                                            content.name = article.title;
+                                            content.owner = article.author_id;
+                                        }
+                                    }
+                                    if (content.type === 'folder') {
+                                        content.owner = topic.owner_id >= 0 ? topic.owner_id : -1;
+                                    }
+                                });
+                                contents.push({ _id: topic._id, type: 'folder', parent: 'root', name: topic.name, owner: topic.owner_id >= 0 ? topic.owner_id : -1, topic: topic._id });
+                                const treeData = new docNode_1.NodeListData();
+                                const tree = treeData.findAndAddChildren(contents);
+                                progress.report({
+                                    increment: increment,
+                                    message: topic.name
+                                });
+                                if (tree) {
+                                    app.topicsData.push(tree);
+                                }
+                                else {
+                                    app.topicsData.push(new docNode_1.DocNode(topic._id, topic.name, 'root', 'folder', topic.owner_id >= 0 ? topic.owner_id : -1, ''));
+                                }
+                            }
+                            else {
+                                app.topicsData.push(new docNode_1.DocNode('', '无内容', 'root', '', '', ''));
+                            }
+                        }
+                        return new Promise(resolve => {
+                            resolve();
                         });
-                        articleNodes.push(new docNode_1.DocNode(topic._id, topic.name, 'root', 'folder', []));
-                        const treeData = new docNode_1.NodeListData();
-                        treeData.getNodeTree(articleNodes);
-                        progress.report({
-                            increment: increment,
-                            message: topic.name
-                        });
-                        app.topicsData.push(treeData.getNodeTree(articleNodes));
-                    }
-                    return new Promise(resolve => {
-                        resolve();
-                    });
-                }));
-                this.topicsData.push(new docNode_1.DocNode('upload_img', '上传图片', 'root', 'folder'));
-                this.topicsData.push(new docNode_1.DocNode('sign_out', '退出登录', 'root', 'folder'));
+                    }));
+                    console.log(this.topicsData);
+                }
             }
             catch (err) {
                 vscode.window.showErrorMessage(err);
+                console.log(err);
             }
         });
     }
@@ -173,12 +222,14 @@ class TopicListProvider {
     }
 }
 exports.TopicListProvider = TopicListProvider;
-class myTreeItem {
+class MyTreeItem {
     constructor() {
         this.label = '';
         this.id = '';
         this.parent = '';
         this.contextValue = '';
+        this.owner = '';
+        this.topic = '';
         this.collapsibleState = vscode.TreeItemCollapsibleState.None;
     }
 }

@@ -1,12 +1,13 @@
-import * as vscode from 'vscode';
-import * as _ from 'lodash';
-
-export class NodeListData {
-    public parentNodeList: DocNode[] = [];
-    public childrenNodeList: DocNode[] = [];
-    public allData: DocNode[] = [];
-
-    public findAndAddChildren(rawData: any[]) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const _ = require("lodash");
+class NodeListData {
+    constructor() {
+        this.parentNodeList = [];
+        this.childrenNodeList = [];
+        this.allData = [];
+    }
+    findAndAddChildren(rawData) {
         this.allData = [];
         rawData.forEach((item) => {
             this.allData.push(new DocNode(item._id, item.name, item.parent, item.type, item.owner, ''));
@@ -18,7 +19,7 @@ export class NodeListData {
         }
         return root;
     }
-    public addChildren(root: DocNode, id: string) {
+    addChildren(root, id) {
         const children = _.filter(this.allData, { parent: root.id });
         if (children.length >= 1) {
             children.forEach((child) => {
@@ -29,15 +30,10 @@ export class NodeListData {
         return root;
     }
 }
-export class DocNode {
-    public id: string;
-    public name: string;
-    public parent: string;
-    public type: string;
-    public owner: string;
-    public topic: string; //topic_id
-    public children: DocNode[] = [];
-    constructor(id: string, name: string, parent: string, type: string, owner: string, topic: string, children?: DocNode[]) {
+exports.NodeListData = NodeListData;
+class DocNode {
+    constructor(id, name, parent, type, owner, topic, children) {
+        this.children = [];
         this.id = id;
         this.name = name;
         this.parent = parent;
@@ -47,3 +43,5 @@ export class DocNode {
         this.children = children || [];
     }
 }
+exports.DocNode = DocNode;
+//# sourceMappingURL=docNode.js.map
