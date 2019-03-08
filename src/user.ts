@@ -4,6 +4,8 @@ const request = require('request');
 const { eventManager } = require('./eventManager');
 import * as jwtDecode from 'jwt-decode';
 
+const setting = require('../resource/setting.json');
+
 class User {
     public async signIn(): Promise<void> {
         try {
@@ -24,7 +26,7 @@ class User {
             }
             request({
                 method: 'PUT',
-                uri: 'http://localhost:8080/api/v1/session',
+                uri: setting.uri + 'session',
                 headers: {
                     "content-type": "application/json",
                 },
@@ -42,13 +44,12 @@ class User {
                         decode = decode.data;
                         eventManager.call('token', { email: decode.email, token: JSON.parse(body).data.token, name: decode.name, id: decode.id });
                     } else {
-                        vscode.window.showErrorMessage('登录失败，' + request.message);
+                        vscode.window.showErrorMessage('登录失败，请重新输入用户名和密码。');
                     }
 
                 }
             });
         } catch (error) {
-            console.log('ERR');
         }
     }
     public signOut(context: vscode.ExtensionContext) {
@@ -79,7 +80,7 @@ class User {
                 if (!content) {
                     return;
                 }
-                result += ('"'+list[i].field + '":"' + content + '",');
+                result += ('"' + list[i].field + '":"' + content + '",');
             }
             const content: string | undefined = await vscode.window.showInputBox({
                 prompt: "输入" + list[list.length - 1].label,
@@ -88,8 +89,7 @@ class User {
             if (!content) {
                 return;
             }
-            result += ('"'+list[list.length - 1].field + '":"'+ content + '"}');
-            console.log(result);
+            result += ('"' + list[list.length - 1].field + '":"' + content + '"}');
             return JSON.parse(result);
 
         } catch (err) {

@@ -12,6 +12,7 @@ const vscode = require("vscode");
 const request = require('request');
 const { eventManager } = require('./eventManager');
 const jwtDecode = require("jwt-decode");
+const setting = require('../resource/setting.json');
 class User {
     signIn() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -33,7 +34,7 @@ class User {
                 }
                 request({
                     method: 'PUT',
-                    uri: 'http://localhost:8080/api/v1/session',
+                    uri: setting.uri + 'session',
                     headers: {
                         "content-type": "application/json",
                     },
@@ -53,13 +54,12 @@ class User {
                             eventManager.call('token', { email: decode.email, token: JSON.parse(body).data.token, name: decode.name, id: decode.id });
                         }
                         else {
-                            vscode.window.showErrorMessage('登录失败，' + request.message);
+                            vscode.window.showErrorMessage('登录失败，请重新输入用户名和密码。');
                         }
                     }
                 });
             }
             catch (error) {
-                console.log('ERR');
             }
         });
     }
@@ -102,7 +102,6 @@ class User {
                     return;
                 }
                 result += ('"' + list[list.length - 1].field + '":"' + content + '"}');
-                console.log(result);
                 return JSON.parse(result);
             }
             catch (err) {

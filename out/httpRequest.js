@@ -11,7 +11,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const request = require('request');
 const vscode = require("vscode");
 const user_1 = require("./user");
-const { eventManager } = require('./eventManager');
 class HttpRequest {
     get(context, uri) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -59,7 +58,6 @@ class HttpRequest {
                 });
             }
             catch (err) {
-                console.log(err);
                 return 'Err';
             }
         });

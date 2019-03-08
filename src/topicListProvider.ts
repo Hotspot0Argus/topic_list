@@ -5,6 +5,8 @@ import { NodeListData, DocNode } from './docNode';
 import * as _ from 'lodash';
 import { httpRequest } from './httpRequest';
 
+const setting = require('../resource/setting.json');
+
 export class TopicListProvider implements vscode.TreeDataProvider<DocNode>{
     private topicsData: DocNode[] = [];
     private myTopicsData: DocNode[] = [];
@@ -19,10 +21,10 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode>{
         if (!element) {
             return [
                 new DocNode('upload_img', '上传图片', 'root', 'folder', user.id(this.context), ''),
-                new DocNode('all', '所有专栏', 'root', 'column', user.id(this.context), '')
+                new DocNode('root', '所有专栏', 'root', 'column', user.id(this.context), '')
             ];
         }
-        if (element.id === 'all') {
+        if (element.id === 'root') {
             return this.topicsData;
         }
         else {
@@ -57,7 +59,7 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode>{
                     title: "上传图片",
                 },
             };
-        } else if (element.type === 'folder' || element.id === 'all') {
+        } else if (element.type === 'folder' || element.id === 'root') {
             return {
                 label: element.name,
                 id: element.id,
@@ -89,7 +91,7 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode>{
         };
     }
     public getNodeType(element: DocNode): string {
-        if (element.id === 'all') {
+        if (element.id === 'root') {
             return 'root';
         }
         if (element.topic === element.id && element.owner.toString() === user.id(this.context)) {
@@ -115,7 +117,7 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode>{
         this.topicsData = [];
         const app = this;
         try {
-            const result: any = await httpRequest.get(this.context, 'http://localhost:8080/api/v1/topics/owned');
+            const result: any = await httpRequest.get(this.context, setting.uri+'topics/owned');
             if (result.statusCode === 200) {
                 const topics = JSON.parse(result.body);
                 const topicsList = topics.data;
@@ -127,7 +129,7 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode>{
                 }, async (progress) => {
                     progress.report({ increment: 0 });
                     for (let topic of topicsList) {
-                        let result: any = await httpRequest.get(this.context, 'http://localhost:8080/api/v1/topics/' + topic.uri + '/articles');
+                        let result: any = await httpRequest.get(this.context, setting.uri+'topics/' + topic.uri + '/articles');
                         if (result.statusCode === 200 && JSON.parse(result.body).data.contents) {
                             const contents = JSON.parse(result.body).data.contents;
                             const articles = JSON.parse(result.body).data.articles;
@@ -147,10 +149,6 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode>{
                             contents.push({ _id: topic._id, type: 'folder', parent: 'root', name: topic.name, owner: topic.owner_id >= 0 ? topic.owner_id : -1, topic: topic._id });
                             const treeData = new NodeListData();
                             const tree = treeData.findAndAddChildren(contents);
-                            progress.report({
-                                increment: increment,
-                                message: topic.name
-                            });
                             if (tree) {
                                 app.topicsData.push(tree);
                             } else {
@@ -164,11 +162,9 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode>{
                         resolve();
                     });
                 });
-                console.log(this.topicsData);
             }
         } catch (err) {
             vscode.window.showErrorMessage(err);
-            console.log(err);
         }
     }
     private async getInfoFromUri(uri: string): Promise<any> {

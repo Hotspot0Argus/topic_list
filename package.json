@@ -34,12 +34,18 @@
 			{
 				"command": "python123.refresh",
 				"title": "刷新",
-				"icon": "media/refresh.svg"
+				"icon": {
+                    "light": "media/light/refresh.svg",
+                    "dark": "media/dark/refresh.svg"
+                }
 			},
 			{
 				"command": "python123.upload",
 				"title": "上传",
-				"icon": "media/upload.svg"
+				"icon": {
+                    "light": "media/light/upload.svg",
+                    "dark": "media/dark/upload.svg"
+                }
 			},
 			{
 				"command": "python123.uploadImg",
@@ -48,27 +54,42 @@
 			{
 				"command": "python123.newFolderInColumn",
 				"title": "新建专栏",
-				"icon": "media/addFolder.svg"
+				"icon": {
+                    "light": "media/light/addFolder.svg",
+                    "dark": "media/dark/addFolder.svg"
+                }
 			},
 			{
 				"command": "python123.newFolderInTopic",
 				"title": "新建目录",
-				"icon": "media/addFolder.svg"
+				"icon": {
+                    "light": "media/light/addFolder.svg",
+                    "dark": "media/dark/addFolder.svg"
+                }
 			},
 			{
 				"command": "python123.deleteNode",
 				"title": "删除当前项",
-				"icon": "media/delete.svg"
+				"icon": {
+                    "light": "media/light/delete.svg",
+                    "dark": "media/dark/delete.svg"
+                }
 			},
 			{
 				"command": "python123.editFolder",
 				"title": "编辑节点名称",
-				"icon": "media/edit.svg"
+				"icon": {
+                    "light": "media/light/edit.svg",
+                    "dark": "media/dark/edit.svg"
+                }
 			},
 			{
 				"command": "python123.editArticle",
 				"title": "编辑文章",
-				"icon": "media/edit.svg"
+				"icon": {
+                    "light": "media/light/edit.svg",
+                    "dark": "media/dark/edit.svg"
+                }
 			}
 		],
 		"menus": {
@@ -141,7 +162,7 @@
 				{
 					"id": "python123",
 					"title": "Python 123",
-					"icon": "media/list-ul-solid.svg"
+					"icon": "media/logo.svg"
 				}
 			]
 		},

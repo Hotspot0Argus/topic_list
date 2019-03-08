@@ -1,7 +1,6 @@
 const request = require('request');
 import * as vscode from 'vscode';
 import { user } from './user';
-const { eventManager } = require('./eventManager');
 
 class HttpRequest {
 
@@ -43,9 +42,9 @@ class HttpRequest {
                 });
             });
         } catch (err) {
-            console.log(err);
             return 'Err';
         }
     }
+
 }
 export const httpRequest: HttpRequest = new HttpRequest();
