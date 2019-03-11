@@ -9,7 +9,7 @@ export class NodeListData {
     public findAndAddChildren(rawData: any[]) {
         this.allData = [];
         rawData.forEach((item) => {
-            this.allData.push(new DocNode(item._id, item.name, item.parent, item.type, item.owner, ''));
+            this.allData.push(new DocNode(item._id, item.name, item.parent, item.type, ''));
         });
         const root = _.find(this.allData, { parent: 'root' });
         if (root) {
@@ -34,16 +34,14 @@ export class DocNode {
     public name: string;
     public parent: string;
     public type: string;
-    public owner: string;
     public topic: string; //topic_id
     public children: DocNode[] = [];
-    constructor(id: string, name: string, parent: string, type: string, owner: string, topic: string, children?: DocNode[]) {
+    constructor(id: string, name: string, parent: string, type: string, topic: string, children?: DocNode[]) {
         this.id = id;
         this.name = name;
         this.parent = parent;
         this.topic = topic;
         this.type = type;
-        this.owner = owner;
         this.children = children || [];
     }
 }

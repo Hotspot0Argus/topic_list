@@ -15,8 +15,8 @@
 		"onCommand:python123.refresh",
 		"onCommand:python123.upload",
 		"onCommand:python123.uploadImg",
-		"onCommand:python123.newFolderInColumn",
-		"onCommand:python123.newFolderInTopic",
+		"onCommand:python123.newTopic",
+		"onCommand:python123.newFolder",
 		"onCommand:python123.deleteNode",
 		"onView:topic"
 	],
@@ -41,7 +41,7 @@
 			},
 			{
 				"command": "python123.upload",
-				"title": "上传",
+				"title": "上传 MarkDown 文件",
 				"icon": {
                     "light": "media/light/upload.svg",
                     "dark": "media/dark/upload.svg"
@@ -52,7 +52,7 @@
 				"title": "上传图片"
 			},
 			{
-				"command": "python123.newFolderInColumn",
+				"command": "python123.newTopic",
 				"title": "新建专栏",
 				"icon": {
                     "light": "media/light/addFolder.svg",
@@ -60,7 +60,7 @@
                 }
 			},
 			{
-				"command": "python123.newFolderInTopic",
+				"command": "python123.newFolder",
 				"title": "新建目录",
 				"icon": {
                     "light": "media/light/addFolder.svg",
@@ -76,16 +76,8 @@
                 }
 			},
 			{
-				"command": "python123.editFolder",
-				"title": "编辑节点名称",
-				"icon": {
-                    "light": "media/light/edit.svg",
-                    "dark": "media/dark/edit.svg"
-                }
-			},
-			{
-				"command": "python123.editArticle",
-				"title": "编辑文章",
+				"command": "python123.editContent",
+				"title": "编辑标题",
 				"icon": {
                     "light": "media/light/edit.svg",
                     "dark": "media/dark/edit.svg"
@@ -106,12 +98,12 @@
 			],
 			"view/item/context": [
 				{
-					"command": "python123.newFolderInTopic",
+					"command": "python123.newFolder",
 					"when": "view == topic && viewItem == folder",
 					"group": "inline"
 				},
 				{
-					"command": "python123.newFolderInTopic",
+					"command": "python123.newFolder",
 					"when": "view == topic && viewItem == topic",
 					"group": "inline"
 				},
@@ -137,22 +129,22 @@
 				},
 				{
 					"command": "python123.deleteNode",
-					"when": "view == topic && viewItem == article ",
+					"when": "view == topic && viewItem == markdown ",
 					"group": "inline"
 				},
 				{
-					"command": "python123.newFolderInColumn",
+					"command": "python123.newTopic",
 					"when": "view == topic && viewItem == root ",
 					"group": "inline"
 				},
 				{
-					"command": "python123.editFolder",
+					"command": "python123.editContent",
 					"when": "view == topic && viewItem == folder ",
 					"group": "inline"
 				},
 				{
-					"command": "python123.editArticle",
-					"when": "view == topic && viewItem == article ",
+					"command": "python123.editContent",
+					"when": "view == topic && viewItem == markdown ",
 					"group": "inline"
 				}
 			]
