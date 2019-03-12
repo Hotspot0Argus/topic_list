@@ -1,17 +1,16 @@
 import * as vscode from 'vscode';
-const request = require('request');
-import { user } from './user';
-import { NodeListData, DocNode } from './docNode';
-import * as _ from 'lodash';
-import { httpRequest } from './httpRequest';
+import { user } from '../active/User';
+import { NodeListData, DocNode } from './DocNode';
+import { httpRequest } from '../message/HttpRequest';
 
-const setting = require('../resource/setting.json');
+const setting = require('../../resource/Setting.json');
 
-export class TopicListProvider implements vscode.TreeDataProvider<DocNode>{
+export class TopicListProvider implements vscode.TreeDataProvider<DocNode> {
     private topicsData: DocNode[] = [];
-    private myTopicsData: DocNode[] = [];
+
     constructor(private context: vscode.ExtensionContext) {
     }
+
     getChildren(element?: DocNode): vscode.ProviderResult<any[]> {
         if (!user.isSignIn(this.context)) {
             return [
@@ -25,12 +24,18 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode>{
             ];
         }
         if (element.id === 'root') {
-            return this.topicsData;
+            try {
+                return this.topicsData;
+            } catch (e) {
+                this.refresh();
+                return this.topicsData;
+            }
         }
         else {
             return element.children;
         }
     }
+
     getTreeItem(element: DocNode): MyTreeItem | Thenable<MyTreeItem> {
         if (element.id === 'no_user') {
             return {
@@ -76,6 +81,7 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode>{
             };
         }
     }
+
     public getNodeType(element: DocNode): string {
         if (element.id === 'root') {
             return 'root';
@@ -85,6 +91,7 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode>{
         }
         return 'folder';
     }
+
     public async refresh(): Promise<void> {
         if (user.isSignIn(this.context)) {
             await this.getListData();
@@ -93,42 +100,36 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode>{
         }
         this.onDidChangeTreeDataEvent.fire();
     }
+
     private onDidChangeTreeDataEvent: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
     public readonly onDidChangeTreeData: vscode.Event<any> = this.onDidChangeTreeDataEvent.event;
+
     private async getListData(): Promise<void> {
         this.topicsData = [];
-        const app = this;
         try {
+            vscode.window.showInformationMessage('正在加载资源...');
             const result: any = await httpRequest.get(this.context, setting.uri + 'topics/owned');
             if (result.statusCode === 200) {
                 const topics = JSON.parse(result.body);
                 const topicsList = topics.data;
-                const increment = 100 / topicsList.length;
-                await vscode.window.withProgress({
-                    location: vscode.ProgressLocation.Notification,
-                    title: "正在加载 ",
-                    cancellable: false
-                }, async (progress) => {
-                    progress.report({ increment: 0 });
-                    for (let topic of topicsList) {
-                        const contents = topic.contents;
-                        contents.push({ _id: topic._id, type: 'folder', parent: 'root', name: topic.name });
-                        const treeData = new NodeListData();
-                        const tree = treeData.findAndAddChildren(contents);
-                        if (tree) {
-                            app.topicsData.push(tree);
-                        } else {
-                            app.topicsData.push(new DocNode(topic._id, topic.name, 'root', 'folder', ''));
-                        }
-
+                for (let topic of topicsList) {
+                    const contents = topic.contents;
+                    contents.push({ _id: topic._id, type: 'folder', parent: 'root', name: topic.name });
+                    const treeData = new NodeListData();
+                    const tree = treeData.findAndAddChildren(contents);
+                    if (tree) {
+                        this.topicsData.push(tree);
+                    } else {
+                        this.topicsData.push(new DocNode(topic._id, topic.name, 'root', 'folder', ''));
                     }
-                    return new Promise(resolve => {
-                        resolve();
-                    });
-                });
+                }
+            } else {
+                vscode.window.showErrorMessage('资源加载失败，正在重试');
+                this.refresh();
             }
         } catch (err) {
-            vscode.window.showErrorMessage(err);
+            vscode.window.showErrorMessage('资源加载失败，正在重试');
+            this.refresh();
         }
     }
 }

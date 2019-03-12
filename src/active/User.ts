@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import { appendFile } from 'fs';
 const request = require('request');
-const { eventManager } = require('./eventManager');
+const { eventManager } = require('../message/EventManager');
 import * as jwtDecode from 'jwt-decode';
 
-const setting = require('../resource/setting.json');
+const setting = require('../../resource/Setting.json');
 
 class User {
     public async signIn(): Promise<void> {

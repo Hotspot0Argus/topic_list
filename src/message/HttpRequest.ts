@@ -1,6 +1,6 @@
 const request = require('request');
 import * as vscode from 'vscode';
-import { user } from './user';
+import { user } from '../active/User';
 
 class HttpRequest {
 
