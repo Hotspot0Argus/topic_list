@@ -18,6 +18,7 @@
 		"onCommand:python123.uploadImg",
 		"onCommand:python123.newFolder",
 		"onCommand:python123.deleteNode",
+		"onCommand:python123.sortNode",
 		"onView:topic"
 	],
 	"main": "./out/extension.js",
@@ -74,6 +75,14 @@
 					"light": "media/light/edit.svg",
 					"dark": "media/dark/edit.svg"
 				}
+			},
+			{
+				"command": "python123.sortNode",
+				"title": "变更节点位置",
+				"icon": {
+					"light": "media/light/change.svg",
+					"dark": "media/dark/change.svg"
+				}
 			}
 		],
 		"menus": {
@@ -116,6 +125,16 @@
 				},
 				{
 					"command": "python123.deleteNode",
+					"when": "view == topic && viewItem == markdown ",
+					"group": "inline"
+				},
+				{
+					"command": "python123.sortNode",
+					"when": "view == topic && viewItem == folder ",
+					"group": "inline"
+				},
+				{
+					"command": "python123.sortNode",
 					"when": "view == topic && viewItem == markdown ",
 					"group": "inline"
 				},

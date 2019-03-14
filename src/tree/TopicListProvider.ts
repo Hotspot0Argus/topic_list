@@ -25,6 +25,7 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode> {
         }
         if (element.id === 'root') {
             try {
+                console.log(this.topicsData);
                 return this.topicsData;
             } catch (e) {
                 this.refresh();

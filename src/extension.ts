@@ -177,7 +177,6 @@ export function activate(context: vscode.ExtensionContext) {
 		const result = await httpRequest.send(context, options);
 		if (result.statusCode === 200) {
 			vscode.window.showInformationMessage('删除成功');
-			console.log(result);
 			topicListProvider.refresh();
 			return;
 		}
@@ -206,8 +205,31 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		vscode.window.showErrorMessage('修改失败');
 	});
+	const sortNode = vscode.commands.registerCommand('python123.sortNode', async (node: DocNode) => {
+		const info = await user.inputInfo([{ label: '新的组内位置（从 1 开始）', field: 'position' }]);
+		const uri = setting.uri + 'topics/' + node.topic + '/contents/' + node.id + '/position';
+		const options = {
+			uri: uri,
+			method: 'PATCH',
+			json: true,
+			headers: {
+				"content-type": "application/json",
+				"authorization": 'Bearer ' + user.token(context)
+			},
+			body: {
+				position: info.position
+			}
+		};
+		const result = await httpRequest.send(context, options);
+		if (result.statusCode === 200) {
+			vscode.window.showInformationMessage('修改成功');
+			topicListProvider.refresh();
+			return;
+		}
+		vscode.window.showErrorMessage('修改失败,请确认新位置是否有效');
+	});
 
-	context.subscriptions.push(signIn, signOut, refresh, upload, uploadImg, newFolder, deleteNode, editContent,
+	context.subscriptions.push(signIn, signOut, refresh, upload, uploadImg, newFolder, deleteNode, editContent, sortNode,
 		vscode.window.registerTreeDataProvider("topic", topicListProvider));
 	topicListProvider.refresh();
 }
