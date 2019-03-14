@@ -1,8 +1,9 @@
 {
 	"name": "topic-list",
-	"displayName": "topic_list",
+	"displayName": "Python 123",
+	"publisher": "python123",
 	"description": "",
-	"version": "0.0.1",
+	"version": "1.1.1",
 	"engines": {
 		"vscode": "^1.29.0"
 	},
@@ -15,7 +16,6 @@
 		"onCommand:python123.refresh",
 		"onCommand:python123.upload",
 		"onCommand:python123.uploadImg",
-		"onCommand:python123.newTopic",
 		"onCommand:python123.newFolder",
 		"onCommand:python123.deleteNode",
 		"onView:topic"
@@ -35,53 +35,45 @@
 				"command": "python123.refresh",
 				"title": "刷新",
 				"icon": {
-                    "light": "media/light/refresh.svg",
-                    "dark": "media/dark/refresh.svg"
-                }
+					"light": "media/light/refresh.svg",
+					"dark": "media/dark/refresh.svg"
+				}
 			},
 			{
 				"command": "python123.upload",
 				"title": "上传 MarkDown 文件",
 				"icon": {
-                    "light": "media/light/upload.svg",
-                    "dark": "media/dark/upload.svg"
-                }
+					"light": "media/light/upload.svg",
+					"dark": "media/dark/upload.svg"
+				}
 			},
 			{
 				"command": "python123.uploadImg",
 				"title": "上传图片"
 			},
 			{
-				"command": "python123.newTopic",
-				"title": "新建专栏",
-				"icon": {
-                    "light": "media/light/addFolder.svg",
-                    "dark": "media/dark/addFolder.svg"
-                }
-			},
-			{
 				"command": "python123.newFolder",
 				"title": "新建目录",
 				"icon": {
-                    "light": "media/light/addFolder.svg",
-                    "dark": "media/dark/addFolder.svg"
-                }
+					"light": "media/light/addFolder.svg",
+					"dark": "media/dark/addFolder.svg"
+				}
 			},
 			{
 				"command": "python123.deleteNode",
 				"title": "删除当前项",
 				"icon": {
-                    "light": "media/light/delete.svg",
-                    "dark": "media/dark/delete.svg"
-                }
+					"light": "media/light/delete.svg",
+					"dark": "media/dark/delete.svg"
+				}
 			},
 			{
 				"command": "python123.editContent",
 				"title": "编辑标题",
 				"icon": {
-                    "light": "media/light/edit.svg",
-                    "dark": "media/dark/edit.svg"
-                }
+					"light": "media/light/edit.svg",
+					"dark": "media/dark/edit.svg"
+				}
 			}
 		],
 		"menus": {
@@ -124,17 +116,7 @@
 				},
 				{
 					"command": "python123.deleteNode",
-					"when": "view == topic && viewItem == topic ",
-					"group": "inline"
-				},
-				{
-					"command": "python123.deleteNode",
 					"when": "view == topic && viewItem == markdown ",
-					"group": "inline"
-				},
-				{
-					"command": "python123.newTopic",
-					"when": "view == topic && viewItem == root ",
 					"group": "inline"
 				},
 				{
@@ -175,16 +157,18 @@
 		"test": "npm run compile && node ./node_modules/vscode/bin/test"
 	},
 	"devDependencies": {
-		"typescript": "^3.3.1",
-		"vscode": "^1.1.28",
-		"tslint": "^5.12.1",
+		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.12.21",
-		"@types/mocha": "^2.2.42"
-	},
-	"dependencies": {
+		"@types/request": "^2.48.1",
 		"@types/jwt-decode": "^2.2.1",
 		"@types/lodash": "^4.14.122",
+		"tslint": "^5.12.1",
+		"typescript": "^3.3.1",
+		"vscode": "^1.1.28"
+	},
+	"dependencies": {
 		"jwt-decode": "^2.2.0",
-		"lodash": "^4.17.11"
+		"lodash": "^4.17.11",
+		"request": "^2.88.0"
 	}
 }

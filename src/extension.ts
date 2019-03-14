@@ -113,7 +113,7 @@ export function activate(context: vscode.ExtensionContext) {
 					if (result.statusCode === 201) {
 						const filename = result.body.data;
 						const path = '/images/' + filename[0] + filename[1] + '/' + filename[2] + filename[3] + '/' + filename.substr(4);
-
+						_terminal.show();
 						_terminal.sendText('echo 将 ' + fileUri[0].fsPath + ' 上传至 ' + setting.host + path);
 						vscode.window.showInformationMessage('将 ' + fileUri[0].fsPath + ' 上传至 ' + setting.host + path + ' 可在控制台查看');
 						fs.writeFile(path, content, { 'encoding': 'utf-8' }, function (err) {
@@ -124,41 +124,14 @@ export function activate(context: vscode.ExtensionContext) {
 						);
 					} else {
 						vscode.window.showErrorMessage('上传失败');
+						_terminal.show();
+						_terminal.sendText('echo 图片 ' + fileUri[0].fsPath + ' 上传失败');
 					}
 				} catch (err) {
 				}
 			}
 		}
 
-	});
-	const newTopic = vscode.commands.registerCommand('python123.newTopic', async () => {
-		const topicInfo = await user.inputInfo([{ label: '专栏名称', field: 'name' },
-		{ label: '专栏 URI', field: 'uri' }, { label: '专栏描述', field: 'description' },
-		{ label: '专栏领域', field: 'category' }, { label: '是否推荐专栏（true 或 false）', field: 'recommended' },
-		{ label: '是否公开专栏（true 或 false）', field: 'is_public' }]);
-		const targetUri = setting.uri + 'topics/';
-		const options = {
-			uri: targetUri,
-			method: 'POST',
-			json: true,
-			headers: {
-				"content-type": "application/json",
-				"authorization": 'Bearer ' + user.token(context)
-			},
-			body: {
-				name: topicInfo.name,
-				description: topicInfo.description,
-				uri: topicInfo.uri,
-				category: topicInfo.category,
-				recommended: topicInfo.recommended === 'true' ? true : false,
-				is_public: topicInfo.is_public === 'true' ? true : false,
-			}
-		};
-		const result = await httpRequest.send(context, options);
-		if (result.statusCode === 201) {
-			vscode.window.showInformationMessage('创建成功');
-			topicListProvider.refresh();
-		}
 	});
 	const newFolder = vscode.commands.registerCommand('python123.newFolder', async (node: DocNode) => {
 		const topicInfo = await user.inputInfo([{ label: '目录名称', field: 'name' }]);
@@ -204,6 +177,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const result = await httpRequest.send(context, options);
 		if (result.statusCode === 200) {
 			vscode.window.showInformationMessage('删除成功');
+			console.log(result);
 			topicListProvider.refresh();
 			return;
 		}
@@ -233,7 +207,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showErrorMessage('修改失败');
 	});
 
-	context.subscriptions.push(signIn, signOut, refresh, upload, uploadImg, newTopic, newFolder, deleteNode, editContent,
+	context.subscriptions.push(signIn, signOut, refresh, upload, uploadImg, newFolder, deleteNode, editContent,
 		vscode.window.registerTreeDataProvider("topic", topicListProvider));
 	topicListProvider.refresh();
 }

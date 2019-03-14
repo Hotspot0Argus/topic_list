@@ -107,7 +107,6 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode> {
     private async getListData(): Promise<void> {
         this.topicsData = [];
         try {
-            vscode.window.showInformationMessage('正在加载资源...');
             const result: any = await httpRequest.get(this.context, setting.uri + 'topics/owned');
             if (result.statusCode === 200) {
                 const topics = JSON.parse(result.body);
@@ -128,7 +127,7 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode> {
                 this.refresh();
             }
         } catch (err) {
-            vscode.window.showErrorMessage('资源加载失败，正在重试');
+            vscode.window.showErrorMessage('资源加载失败，正在重试' + err);
             this.refresh();
         }
     }

@@ -1,7 +1,5 @@
 import { EventEmitter } from "events";
 
-const request = require('request');
-
 class EventManager extends EventEmitter{
     public call(command:string,value:string){
         this.emit(command,value);

@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { appendFile } from 'fs';
 const request = require('request');
 const { eventManager } = require('../message/EventManager');
 import * as jwtDecode from 'jwt-decode';
@@ -39,7 +38,7 @@ class User {
                     vscode.window.showErrorMessage('登录失败，错误', error);
                 } else if (request) {
                     if (request.statusCode === 201) {
-                        vscode.window.showInformationMessage('登录成功！请等待加载完毕');
+                        vscode.window.showInformationMessage(email + ' 登录成功！请等待加载完毕');
                         let decode: any = jwtDecode(JSON.parse(body).data.token);
                         decode = decode.data;
                         eventManager.call('token', { email: decode.email, token: JSON.parse(body).data.token, name: decode.name, id: decode.id });
