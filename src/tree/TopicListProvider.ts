@@ -78,7 +78,12 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode> {
                 parent: element.parent,
                 topic: element.topic,
                 collapsibleState: vscode.TreeItemCollapsibleState.None,
-                contextValue: element.type
+                contextValue: element.type,
+                command: {
+                    command: "python123.getArticle",
+                    title: "下载当前文章",
+                    arguments: [element.id, element.type, element.name]
+                }
             };
         }
     }

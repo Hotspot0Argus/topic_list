@@ -15,6 +15,7 @@ export function activate(context: vscode.ExtensionContext) {
 		context.globalState.update('token', content);
 		topicListProvider.refresh();
 	});
+	const articleList: string[] = [];
 
 	const signIn = vscode.commands.registerCommand('python123.signIn', () => {
 		user.signIn();
@@ -27,41 +28,39 @@ export function activate(context: vscode.ExtensionContext) {
 		topicListProvider.refresh();
 	});
 	const upload = vscode.commands.registerCommand('python123.upload', async (node: DocNode) => {
-		if (user.isSignIn(context)) {
-			const window = vscode.window.activeTextEditor;
-			if (window && window.document.languageId === "markdown") {
-				const doc = await vscode.workspace.openTextDocument(window.document.uri.fsPath);
+		const window = vscode.window.activeTextEditor;
+		if (window && window.document.languageId === "markdown") {
+			const doc = await vscode.workspace.openTextDocument(window.document.uri.fsPath);
 
-				const articleContent = doc.getText();
-				const uri = setting.uri + 'topics/' + node.topic + '/contents';
-				const allName: any = window.document.uri.fsPath.split('\\').pop();
-				const name = allName.split('.')[0];
-				const options = {
-					uri: uri,
-					method: 'POST',
-					json: true,
-					headers: {
-						"content-type": "application/json",
-						"authorization": 'Bearer ' + user.token(context)
-					},
-					body: {
-						markdown: articleContent,
-						name: name,
-						type: 'markdown',
-						parent: node.id
-					}
-				};
-				const articleResult = await httpRequest.send(context, options);
-				if (articleResult.statusCode === 200) {
-					vscode.window.showInformationMessage('文件 ' + name + ' 上传成功' + (articleResult.data || ''));
-					topicListProvider.refresh();
-					return;
+			const articleContent = doc.getText();
+			const uri = setting.uri + 'topics/' + node.topic + '/contents';
+			const allName: any = window.document.uri.fsPath.split('\\').pop();
+			const name = allName.split('.')[0];
+			const options = {
+				uri: uri,
+				method: 'POST',
+				json: true,
+				headers: {
+					"content-type": "application/json",
+					"authorization": 'Bearer ' + user.token(context)
+				},
+				body: {
+					markdown: articleContent,
+					name: name,
+					type: 'markdown',
+					parent: node.id
 				}
-				vscode.window.showErrorMessage('文件上传失败');
+			};
+			const articleResult = await httpRequest.send(context, options);
+			if (articleResult.statusCode === 200) {
+				vscode.window.showInformationMessage('文件 ' + name + ' 上传成功' + (articleResult.data || ''));
+				topicListProvider.refresh();
+				return;
 			}
-			else {
-				vscode.window.showErrorMessage('未在打开的窗口中检测到 MarkDown 文件');
-			}
+			vscode.window.showErrorMessage('文件上传失败');
+		}
+		else {
+			vscode.window.showErrorMessage('未在打开的窗口中检测到 MarkDown 文件');
 		}
 	});
 	const options: vscode.OpenDialogOptions = {
@@ -228,8 +227,85 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		vscode.window.showErrorMessage('修改失败,请确认新位置是否有效');
 	});
+	const getArticle = vscode.commands.registerCommand('python123.getArticle', async (id, type, title) => {
+		if (type !== 'markdown') {
+			return;
+		}
+		const name = title + '.' + (type === 'markdown' ? 'md' : 'ipynb');
+		const index = articleList.findIndex((item) => {
+			return item === id;
+		});
+		const path = context.extensionPath + '\\doc\\' + id;
+		if (index >= 0) {
+			openFileinVscode(path + '\\' + name);
+			return;
+		}
+		const uri = setting.uri + 'articles/' + id;
+		const options = {
+			uri: uri,
+			method: 'GET',
+			json: true,
+			headers: {
+				"content-type": "application/json",
+				"authorization": 'Bearer ' + user.token(context)
+			}
+		};
+		const result = await httpRequest.send(context, options);
+		if (result.statusCode === 200) {
+			fs.mkdir(path, 0o777, function (err) {
+				if (err) {
+					fs.rmdir(path, function (err) { });
+				}
+				fs.writeFile(path + '\\' + name, result.body.data.markdown, function (err) {
+					if (err) { }
+					articleList.push(id);
+					openFileinVscode(path + '\\' + name);
+				});
+			});
+			return;
+		}
+		vscode.window.showErrorMessage('加载当前文章失败');
+	});
+	function openFileinVscode(path: string) {
+		vscode.workspace.openTextDocument(path).then(doc => {
+			vscode.window.showTextDocument(doc);
+		});
+	}
+	const updateArticle = vscode.commands.registerCommand('python123.updateArticle', async (node: DocNode) => {
+		try {
+			const path = context.extensionPath + '\\doc\\' + node.id + '\\' + node.name + (node.type === 'markdown' ? '.md' : '.ipynb');
+			const doc = await vscode.workspace.openTextDocument(path);
+			const uri = setting.uri + 'articles/' + node.id + '/markdown';
+			const options = {
+				uri: uri,
+				method: 'PATCH',
+				json: true,
+				headers: {
+					"content-type": "application/json",
+					"authorization": 'Bearer ' + user.token(context)
+				},
+				body: {
+					markdown: doc.getText()
+				}
+			};
+			const result = await httpRequest.send(context, options);
+			if (result.statusCode === 200) {
+				vscode.window.showInformationMessage('更新成功');
+				const index = articleList.findIndex((item) => {
+					return item === node.id;
+				});
+				articleList.splice(index, 1);
+				topicListProvider.refresh();
+				return;
+			}
+			vscode.window.showErrorMessage('更新失败,请检查是否对该文章做过修改，并保存');
+		} catch (e) {
+			vscode.window.showErrorMessage('更新失败,请检查是否对该文章做过修改，并保存');
+		}
 
-	context.subscriptions.push(signIn, signOut, refresh, upload, uploadImg, newFolder, deleteNode, editContent, sortNode,
+	});
+
+	context.subscriptions.push(signIn, signOut, refresh, upload, updateArticle, uploadImg, newFolder, deleteNode, editContent, sortNode, getArticle,
 		vscode.window.registerTreeDataProvider("topic", topicListProvider));
 	topicListProvider.refresh();
 }

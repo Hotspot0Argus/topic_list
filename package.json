@@ -19,6 +19,8 @@
 		"onCommand:python123.newFolder",
 		"onCommand:python123.deleteNode",
 		"onCommand:python123.sortNode",
+		"onCommand:python123.getArticle",
+		"onCommand:python123.updateArticle",
 		"onView:topic"
 	],
 	"main": "./out/extension.js",
@@ -27,6 +29,10 @@
 			{
 				"command": "python123.signIn",
 				"title": "登录"
+			},
+			{
+				"command": "python123.getArticle",
+				"title": "下载当前文章"
 			},
 			{
 				"command": "python123.signOut",
@@ -83,6 +89,14 @@
 					"light": "media/light/change.svg",
 					"dark": "media/dark/change.svg"
 				}
+			},
+			{
+				"command": "python123.updateArticle",
+				"title": "保存更改",
+				"icon": {
+					"light": "media/light/upload.svg",
+					"dark": "media/dark/upload.svg"
+				}
 			}
 		],
 		"menus": {
@@ -125,6 +139,11 @@
 				},
 				{
 					"command": "python123.deleteNode",
+					"when": "view == topic && viewItem == markdown ",
+					"group": "inline"
+				},
+				{
+					"command": "python123.updateArticle",
 					"when": "view == topic && viewItem == markdown ",
 					"group": "inline"
 				},
