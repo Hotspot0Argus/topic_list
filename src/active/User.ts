@@ -96,5 +96,8 @@ class User {
         }
 
     }
+    public async requireConfirm(content: string) {
+        return vscode.window.showInformationMessage(content, '是', '否');
+    }
 }
 export const user: User = new User();

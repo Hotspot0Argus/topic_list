@@ -116,7 +116,7 @@
 					"when": "view == topic"
 				},
 				{
-					"command": "python123.refreshList",
+					"command": "python123.signOut",
 					"when": "view == topic"
 				}
 			],
@@ -143,13 +143,11 @@
 				},
 				{
 					"command": "python123.deleteNode",
-					"when": "view == topic && viewItem == folder ",
-					"group": "inline"
+					"when": "view == topic && viewItem == folder "
 				},
 				{
 					"command": "python123.deleteNode",
-					"when": "view == topic && viewItem == markdown ",
-					"group": "inline"
+					"when": "view == topic && viewItem == markdown "
 				},
 				{
 					"command": "python123.updateArticle",
@@ -158,23 +156,19 @@
 				},
 				{
 					"command": "python123.sortNode",
-					"when": "view == topic && viewItem == folder ",
-					"group": "inline"
+					"when": "view == topic && viewItem == folder "
 				},
 				{
 					"command": "python123.sortNode",
-					"when": "view == topic && viewItem == markdown ",
-					"group": "inline"
+					"when": "view == topic && viewItem == markdown "
 				},
 				{
 					"command": "python123.editContent",
-					"when": "view == topic && viewItem == folder ",
-					"group": "inline"
+					"when": "view == topic && viewItem == folder "
 				},
 				{
 					"command": "python123.editContent",
-					"when": "view == topic && viewItem == markdown ",
-					"group": "inline"
+					"when": "view == topic && viewItem == markdown "
 				}
 			]
 		},
