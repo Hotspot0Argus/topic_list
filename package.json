@@ -13,6 +13,7 @@
 	"activationEvents": [
 		"onCommand:python123.signIn",
 		"onCommand:python123.signOut",
+		"onCommand:python123.refreshList",
 		"onCommand:python123.refresh",
 		"onCommand:python123.upload",
 		"onCommand:python123.uploadImg",
@@ -37,6 +38,10 @@
 			{
 				"command": "python123.signOut",
 				"title": "退出登录 "
+			},
+			{
+				"command": "python123.refreshList",
+				"title": "刷新缓存 "
 			},
 			{
 				"command": "python123.refresh",
@@ -108,6 +113,10 @@
 				},
 				{
 					"command": "python123.signOut",
+					"when": "view == topic"
+				},
+				{
+					"command": "python123.refreshList",
 					"when": "view == topic"
 				}
 			],

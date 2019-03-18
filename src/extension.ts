@@ -15,7 +15,7 @@ export function activate(context: vscode.ExtensionContext) {
 		context.globalState.update('token', content);
 		topicListProvider.refresh();
 	});
-	const articleList: string[] = [];
+	let articleList: string[] = [];
 
 	const signIn = vscode.commands.registerCommand('python123.signIn', () => {
 		user.signIn();
@@ -26,6 +26,9 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	const refresh = vscode.commands.registerCommand('python123.refresh', () => {
 		topicListProvider.refresh();
+	});
+	const refreshList = vscode.commands.registerCommand('python123.refreshList', () => {
+		articleList = [];
 	});
 	const upload = vscode.commands.registerCommand('python123.upload', async (node: DocNode) => {
 		const window = vscode.window.activeTextEditor;
@@ -266,10 +269,14 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		vscode.window.showErrorMessage('加载当前文章失败');
 	});
-	function openFileinVscode(path: string) {
-		vscode.workspace.openTextDocument(path).then(doc => {
-			vscode.window.showTextDocument(doc);
-		});
+	async function openFileinVscode(path: string) {
+		try {
+			const doc = await vscode.workspace.openTextDocument(path);
+			if (doc) {
+				vscode.window.showTextDocument(doc);
+				return;
+			}
+		} catch (e) { vscode.window.showErrorMessage('加载当前文章失败,建议清空缓存后重新点击查看。'); }
 	}
 	const updateArticle = vscode.commands.registerCommand('python123.updateArticle', async (node: DocNode) => {
 		try {
@@ -305,7 +312,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	});
 
-	context.subscriptions.push(signIn, signOut, refresh, upload, updateArticle, uploadImg, newFolder, deleteNode, editContent, sortNode, getArticle,
+	context.subscriptions.push(signIn, signOut, refresh, upload, updateArticle, refreshList, uploadImg, newFolder, deleteNode, editContent, sortNode, getArticle,
 		vscode.window.registerTreeDataProvider("topic", topicListProvider));
 	topicListProvider.refresh();
 }
