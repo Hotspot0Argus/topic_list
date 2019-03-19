@@ -4,7 +4,9 @@ import { DocNode } from './tree/DocNode';
 import { eventManager } from './message/EventManager';
 import { user } from './active/User';
 import { HttpRequest } from './message/HttpRequest';
+const child_process = require('child_process');
 import * as fs from 'fs';
+import { inherits } from 'util';
 
 const setting = require('../resource/Setting.json');
 
@@ -18,8 +20,52 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	let articleList: string[] = [];
 
+	function emptyDir(filePath: string) {
+		const files = fs.readdirSync(filePath);
+		files.forEach((file) => {
+			const nextFilePath = `${filePath}/${file}`;
+			const states = fs.statSync(nextFilePath);
+			if (states.isDirectory()) {
+				emptyDir(nextFilePath);
+			} else {
+				fs.unlinkSync(nextFilePath);
+			}
+		});
+	}
+
+
+	function rmEmptyDir(filePath: string) {
+		const files = fs.readdirSync(filePath);
+		if (files.length === 0) {
+			fs.rmdirSync(filePath);
+		} else {
+			let tempFiles = 0;
+			files.forEach((file) => {
+				tempFiles++;
+				const nextFilePath = `${filePath}/${file}`;
+				rmEmptyDir(nextFilePath);
+			});
+			if (tempFiles === files.length) {
+				fs.rmdirSync(filePath);
+			}
+		}
+	}
+	function init() {
+		const filePath = context.extensionPath + '\\doc';
+		if (fs.existsSync(filePath)) {
+			emptyDir(filePath);
+			rmEmptyDir(filePath);
+		}
+		fs.mkdirSync(filePath);
+	}
+	init();
+
+
+	// _terminal.sendText('rm -rf ' + context.extensionPath + '\\doc');
+
+
 	const signIn = vscode.commands.registerCommand('python123.signIn', () => {
-		user.signIn();
+		user.signIn(context);
 	});
 	const signOut = vscode.commands.registerCommand('python123.signOut', () => {
 		user.signOut(context);
@@ -30,6 +76,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	const refreshList = vscode.commands.registerCommand('python123.refreshList', () => {
 		articleList = [];
+		init();
 	});
 	const upload = vscode.commands.registerCommand('python123.upload', async (node: DocNode) => {
 		const window = vscode.window.activeTextEditor;
@@ -57,64 +104,62 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showErrorMessage('未在打开的窗口中检测到 MarkDown 文件');
 		}
 	});
-	const options: vscode.OpenDialogOptions = {
-		canSelectMany: false,
-		openLabel: 'Open',
-		filters: {
-			'Images': ['png', 'jpg', 'jpeg']
-		}
-	};
-	const uploadImg = vscode.commands.registerCommand('python123.uploadImg', async (topic: DocNode) => {
-		if (user.isSignIn(context)) {
-			const uri = setting.uri + 'files';
-			const fileUri = await vscode.window.showOpenDialog(options);
-			if (fileUri) {
-				try {
-					const content: string = await new Promise((resolve, reject) => {
-						fs.readFile(fileUri[0].fsPath, (err: any, buffer: any) => {
-							if (err) {
-								reject(err);
-							} else {
-								resolve(buffer);
-							}
-						});
-					});
-					const path = fileUri[0].fsPath;
-					const extension = path.split('.').pop();
-					const fileName = path.split('\\').pop();
-					const formData = {
-						file: {
-							value: fs.createReadStream(path),
-							options: {
-								filename: fileName,
-								contentType: 'image/jpg'
-							}
-						},
-						extension: extension
-					};
-					try {
-						const result = await httpRequest.uploadFile(uri, formData);
-						const filename = result.body.data;
-						const path = '/images/' + filename[0] + filename[1] + '/' + filename[2] + filename[3] + '/' + filename.substr(4);
-						_terminal.show();
-						_terminal.sendText('echo 将 ' + fileUri[0].fsPath + ' 上传至 ' + setting.host + path);
-						vscode.window.showInformationMessage('将 ' + fileUri[0].fsPath + ' 上传至 ' + setting.host + path + ' 可在控制台查看');
-						fs.writeFile(path, content, { 'encoding': 'utf-8' }, function (err) {
-							if (err) {
-								throw err;
-							}
+
+	const uploadImg = vscode.commands.registerCommand('python123.uploadImg', async () => {
+		const options: vscode.OpenDialogOptions = {
+			canSelectMany: false,
+			openLabel: 'Open',
+			filters: {
+				'Images': ['png', 'jpg', 'jpeg']
+			}
+		};
+		const uri = setting.uri + 'files';
+		const fileUri = await vscode.window.showOpenDialog(options);
+		if (fileUri) {
+			try {
+				const content: string = await new Promise((resolve, reject) => {
+					fs.readFile(fileUri[0].fsPath, (err: any, buffer: any) => {
+						if (err) {
+							reject(err);
+						} else {
+							resolve(buffer);
 						}
-						);
-					} catch (err) {
-						vscode.window.showErrorMessage('上传失败');
-						_terminal.show();
-						_terminal.sendText('echo 图片 ' + fileUri[0].fsPath + ' 上传失败');
+					});
+				});
+				const path = fileUri[0].fsPath;
+				const extension = path.split('.').pop();
+				const fileName = path.split('\\').pop();
+				const formData = {
+					file: {
+						value: fs.createReadStream(path),
+						options: {
+							filename: fileName,
+							contentType: 'image/jpg'
+						}
+					},
+					extension: extension
+				};
+				try {
+					const result = await httpRequest.uploadFile(uri, formData);
+					const filename = result.body.data;
+					const path = '/images/' + filename[0] + filename[1] + '/' + filename[2] + filename[3] + '/' + filename.substr(4);
+					_terminal.show();
+					_terminal.sendText('echo 将 ' + fileUri[0].fsPath + ' 上传至 ' + setting.host + path);
+					vscode.window.showInformationMessage('将 ' + fileUri[0].fsPath + ' 上传至 ' + setting.host + path + ' 可在控制台查看');
+					fs.writeFile(path, content, { 'encoding': 'utf-8' }, function (err) {
+						if (err) {
+							throw err;
+						}
 					}
+					);
 				} catch (err) {
+					vscode.window.showErrorMessage('上传失败');
+					_terminal.show();
+					_terminal.sendText('echo 图片 ' + fileUri[0].fsPath + ' 上传失败');
 				}
+			} catch (err) {
 			}
 		}
-
 	});
 	const newFolder = vscode.commands.registerCommand('python123.newFolder', async (node: DocNode) => {
 		const topicInfo = await user.inputInfo([{ label: '目录名称', field: 'name' }]);

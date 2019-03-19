@@ -1,12 +1,11 @@
 import * as vscode from 'vscode';
-const request = require('request');
 const { eventManager } = require('../message/EventManager');
-import * as jwtDecode from 'jwt-decode';
+import { HttpRequest } from '../message/HttpRequest';
 
 const setting = require('../../resource/Setting.json');
 
 class User {
-    public async signIn(): Promise<void> {
+    public async signIn(context: vscode.ExtensionContext): Promise<void> {
         try {
             const email: string | undefined = await vscode.window.showInputBox({
                 prompt: "输入账号邮箱",
@@ -23,7 +22,7 @@ class User {
             if (!pwd) {
                 return;
             }
-            request({
+            const option = {
                 method: 'PUT',
                 uri: setting.uri + 'session',
                 headers: {
@@ -33,21 +32,10 @@ class User {
                     email: email,
                     pass: pwd
                 }),
-            }, function (error: any, request: any, body: any) {
-                if (error) {
-                    vscode.window.showErrorMessage('登录失败，错误', error);
-                } else if (request) {
-                    if (request.statusCode === 201) {
-                        vscode.window.showInformationMessage(email + ' 登录成功！请等待加载完毕');
-                        let decode: any = jwtDecode(JSON.parse(body).data.token);
-                        decode = decode.data;
-                        eventManager.call('token', { email: decode.email, token: JSON.parse(body).data.token, name: decode.name, id: decode.id });
-                    } else {
-                        vscode.window.showErrorMessage('登录失败，请重新输入用户名和密码。');
-                    }
+            };
+            const httpRequest = new HttpRequest(context);
+            httpRequest.send(option);
 
-                }
-            });
         } catch (error) {
         }
     }

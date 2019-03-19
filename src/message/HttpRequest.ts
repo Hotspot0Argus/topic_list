@@ -6,7 +6,6 @@ export class HttpRequest {
     private context: vscode.ExtensionContext;
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
-
     }
 
     public async put(uri: string, body: object): Promise<any> {
