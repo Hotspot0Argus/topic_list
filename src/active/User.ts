@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 const { eventManager } = require('../message/EventManager');
 import { HttpRequest } from '../message/HttpRequest';
+import * as jwtDecode from 'jwt-decode';
 
 const setting = require('../../resource/Setting.json');
 
@@ -25,18 +26,24 @@ class User {
             const option = {
                 method: 'PUT',
                 uri: setting.uri + 'session',
+                json: true,
                 headers: {
                     "content-type": "application/json",
                 },
-                body: JSON.stringify({
+                body: {
                     email: email,
                     pass: pwd
-                }),
+                }
             };
             const httpRequest = new HttpRequest(context);
-            httpRequest.send(option);
+            const result = await httpRequest.send(option);
+            vscode.window.showInformationMessage(email + ' 登录成功！请等待加载完毕');
+            let decode: any = jwtDecode(result.body.data.token);
+            decode = decode.data;
+            eventManager.call('token', { email: decode.email, token: result.body.data.token, name: decode.name, id: decode.id });
 
         } catch (error) {
+            vscode.window.showInformationMessage(' 登录失败！请重新输入账号密码');
         }
     }
     public signOut(context: vscode.ExtensionContext) {

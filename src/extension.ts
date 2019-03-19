@@ -61,9 +61,6 @@ export function activate(context: vscode.ExtensionContext) {
 	init();
 
 
-	// _terminal.sendText('rm -rf ' + context.extensionPath + '\\doc');
-
-
 	const signIn = vscode.commands.registerCommand('python123.signIn', () => {
 		user.signIn(context);
 	});
@@ -144,7 +141,7 @@ export function activate(context: vscode.ExtensionContext) {
 					const filename = result.body.data;
 					const path = '/images/' + filename[0] + filename[1] + '/' + filename[2] + filename[3] + '/' + filename.substr(4);
 					_terminal.show();
-					_terminal.sendText('echo 将 ' + fileUri[0].fsPath + ' 上传至 ' + setting.host + path);
+					_terminal.sendText(`echo '图片路径：![${fileName}](${setting.host + path})'`);
 					vscode.window.showInformationMessage('将 ' + fileUri[0].fsPath + ' 上传至 ' + setting.host + path + ' 可在控制台查看');
 					fs.writeFile(path, content, { 'encoding': 'utf-8' }, function (err) {
 						if (err) {
@@ -278,12 +275,13 @@ export function activate(context: vscode.ExtensionContext) {
 				return item === node.id;
 			});
 			articleList.splice(index, 1);
-			vscode.window.showInformationMessage('更新成功');
+			vscode.window.showInformationMessage(`文件 ${path} 已更新至服务器`);
+			_terminal.sendText(`echo 文件 ${path} 已更新至服务器`);
 			topicListProvider.refresh();
 			return;
 
 		} catch (e) {
-			vscode.window.showErrorMessage('更新失败,请检查是否对该文章做过修改，并保存');
+			vscode.window.showErrorMessage('更新失败,请检查是否已经对该文章做过修改');
 		}
 
 	});

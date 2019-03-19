@@ -127,8 +127,7 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode> {
                 }
             }
         } catch (err) {
-            vscode.window.showErrorMessage('资源加载失败，正在重试' + err);
-            this.refresh();
+            vscode.window.showErrorMessage('资源加载失败,请重新登录。' + err);
         }
     }
 }

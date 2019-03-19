@@ -116,7 +116,7 @@
 					"when": "view == topic"
 				},
 				{
-					"command": "python123.signOut",
+					"command": "python123.refreshList",
 					"when": "view == topic"
 				}
 			],
