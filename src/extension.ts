@@ -4,9 +4,7 @@ import { DocNode } from './tree/DocNode';
 import { eventManager } from './message/EventManager';
 import { user } from './active/User';
 import { HttpRequest } from './message/HttpRequest';
-const child_process = require('child_process');
 import * as fs from 'fs';
-import { inherits } from 'util';
 
 const setting = require('../resource/Setting.json');
 
@@ -58,7 +56,8 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		fs.mkdirSync(filePath);
 	}
-	init();
+	try { init(); } catch{ init(); }
+
 
 
 	const signIn = vscode.commands.registerCommand('python123.signIn', () => {
@@ -75,7 +74,7 @@ export function activate(context: vscode.ExtensionContext) {
 		articleList = [];
 		init();
 	});
-	const upload = vscode.commands.registerCommand('python123.upload', async (node: DocNode) => {
+	const uploadMarkdown = vscode.commands.registerCommand('python123.uploadMarkdown', async (node: DocNode) => {
 		const window = vscode.window.activeTextEditor;
 		if (window && window.document.languageId === "markdown") {
 			const doc = await vscode.workspace.openTextDocument(window.document.uri.fsPath);
@@ -100,6 +99,24 @@ export function activate(context: vscode.ExtensionContext) {
 		else {
 			vscode.window.showErrorMessage('未在打开的窗口中检测到 MarkDown 文件');
 		}
+	});
+	const uploadProblem = vscode.commands.registerCommand('python123.uploadProblem', async (node: DocNode) => {
+		const problemInfo = await user.inputInfo([{ label: '习题名称名称', field: 'name' }, { label: '习题编号', field: 'id' }]);
+		const topicId = node.topic;
+		if (!problemInfo.name || !problemInfo.id) { return; }
+		const uri = setting.uri + 'topics/' + topicId + '/contents';
+		try {
+			await httpRequest.post(uri, {
+				name: problemInfo.name,
+				parent: node.id,
+				type: 'problem',
+				problem_id: problemInfo.id
+			});
+			vscode.window.showInformationMessage('添加成功');
+			topicListProvider.refresh();
+			return;
+		} catch (err) { vscode.window.showErrorMessage('添加失败'); }
+
 	});
 
 	const uploadImg = vscode.commands.registerCommand('python123.uploadImg', async () => {
@@ -159,12 +176,13 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 	const newFolder = vscode.commands.registerCommand('python123.newFolder', async (node: DocNode) => {
-		const topicInfo = await user.inputInfo([{ label: '目录名称', field: 'name' }]);
+		const folderInfo = await user.inputInfo([{ label: '目录名称', field: 'name' }]);
 		const topicId = node.topic;
+		if (!folderInfo.name) { return; }
 		const uri = setting.uri + 'topics/' + topicId + '/contents';
 		try {
 			await httpRequest.post(uri, {
-				name: topicInfo.name,
+				name: folderInfo.name,
 				parent: node.id,
 				type: 'folder'
 			});
@@ -220,11 +238,12 @@ export function activate(context: vscode.ExtensionContext) {
 		} catch (err) { vscode.window.showErrorMessage('修改失败,请确认新位置是否有效'); }
 
 	});
-	const getArticle = vscode.commands.registerCommand('python123.getArticle', async (id, type, title) => {
-		if (type !== 'markdown') {
+	const getContent = vscode.commands.registerCommand('python123.getContent', async (id, type, title, problem) => {
+		if (type !== 'markdown' && type !== 'problem') {
+			vscode.window.showErrorMessage('当前节点无效');
 			return;
 		}
-		const name = title + '.' + (type === 'markdown' ? 'md' : 'ipynb');
+		const name = title + '.' + ((type === 'markdown' || type === 'problem') ? 'md' : 'ipynb');
 		const index = articleList.findIndex((item) => {
 			return item === id;
 		});
@@ -234,21 +253,28 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 		try {
-			const uri = setting.uri + 'articles/' + id;
+			let uri = '';
+			switch (type) {
+				case 'markdown': uri = setting.uri + 'articles/' + id; break;
+				case 'problem': uri = setting.uri + 'teacher/problems/' + problem; break;
+			}
+
 			const result = await httpRequest.get(uri);
+	
+			const markdown = type === 'markdown' ? result.body.data.markdown : '#  题目部分:\n' + result.body.data.markdown_content + '\n#  讲解部分:\n' + result.body.data.markdown_explanation;
 
 			fs.mkdir(path, 0o777, function (err) {
 				if (err) {
 					fs.rmdir(path, function (err) { });
 				}
-				fs.writeFile(path + '\\' + name, result.body.data.markdown, function (err) {
+				fs.writeFile(path + '\\' + name, markdown, function (err) {
 					if (err) { }
 					articleList.push(id);
 					openFileinVscode(path + '\\' + name);
 				});
 			});
 			return;
-		} catch (err) { vscode.window.showErrorMessage('加载当前文章失败'); }
+		} catch (err) { vscode.window.showErrorMessage('加载当前节点内容失败'); }
 
 	});
 	async function openFileinVscode(path: string) {
@@ -286,7 +312,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	});
 
-	context.subscriptions.push(signIn, signOut, refresh, upload, updateArticle, refreshList, uploadImg, newFolder, deleteNode, editContent, sortNode, getArticle,
+	context.subscriptions.push(signIn, signOut, refresh, uploadMarkdown, updateArticle, refreshList, uploadImg, newFolder, deleteNode, editContent, sortNode, getContent, uploadProblem,
 		vscode.window.registerTreeDataProvider("topic", topicListProvider));
 	topicListProvider.refresh();
 }

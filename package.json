@@ -15,12 +15,13 @@
 		"onCommand:python123.signOut",
 		"onCommand:python123.refreshList",
 		"onCommand:python123.refresh",
-		"onCommand:python123.upload",
+		"onCommand:python123.uploadMarkdown",
+		"onCommand:python123.uploadProblem",
 		"onCommand:python123.uploadImg",
 		"onCommand:python123.newFolder",
 		"onCommand:python123.deleteNode",
 		"onCommand:python123.sortNode",
-		"onCommand:python123.getArticle",
+		"onCommand:python123.getContent",
 		"onCommand:python123.updateArticle",
 		"onView:topic"
 	],
@@ -32,7 +33,7 @@
 				"title": "登录"
 			},
 			{
-				"command": "python123.getArticle",
+				"command": "python123.getContent",
 				"title": "下载当前文章"
 			},
 			{
@@ -52,8 +53,16 @@
 				}
 			},
 			{
-				"command": "python123.upload",
+				"command": "python123.uploadMarkdown",
 				"title": "上传 MarkDown 文件",
+				"icon": {
+					"light": "media/light/upload.svg",
+					"dark": "media/dark/upload.svg"
+				}
+			},
+			{
+				"command": "python123.uploadProblem",
+				"title": "添加已有习题",
 				"icon": {
 					"light": "media/light/upload.svg",
 					"dark": "media/dark/upload.svg"
@@ -132,12 +141,22 @@
 					"group": "inline"
 				},
 				{
-					"command": "python123.upload",
+					"command": "python123.uploadMarkdown",
 					"when": "view == topic && viewItem == folder",
 					"group": "inline"
 				},
 				{
-					"command": "python123.upload",
+					"command": "python123.uploadProblem",
+					"when": "view == topic && viewItem == folder",
+					"group": "inline"
+				},
+				{
+					"command": "python123.uploadMarkdown",
+					"when": "view == topic && viewItem == topic",
+					"group": "inline"
+				},
+				{
+					"command": "python123.uploadProblem",
 					"when": "view == topic && viewItem == topic",
 					"group": "inline"
 				},

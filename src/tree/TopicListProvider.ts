@@ -16,13 +16,13 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode> {
     getChildren(element?: DocNode): vscode.ProviderResult<any[]> {
         if (!user.isSignIn(this.context)) {
             return [
-                new DocNode('no_user', '登录', 'root', 'folder', '')
+                new DocNode('no_user', '登录', 'root', 'folder', '', '-1')
             ];
         }
         if (!element) {
             return [
-                new DocNode('upload_img', '上传图片', 'root', 'folder', ''),
-                new DocNode('root', '所有专栏', 'root', 'column', '')
+                new DocNode('upload_img', '上传图片', 'root', 'folder', '', '-1'),
+                new DocNode('root', '所有专栏', 'root', 'column', '', '-1')
             ];
         }
         if (element.id === 'root') {
@@ -81,9 +81,9 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode> {
                 collapsibleState: vscode.TreeItemCollapsibleState.None,
                 contextValue: element.type,
                 command: {
-                    command: "python123.getArticle",
-                    title: "下载当前文章",
-                    arguments: [element.id, element.type, element.name]
+                    command: "python123.getContent",
+                    title: "加载当前节点",
+                    arguments: [element.id, element.type, element.name, element.problem]
                 }
             };
         }
@@ -123,7 +123,7 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode> {
                 if (tree) {
                     this.topicsData.push(tree);
                 } else {
-                    this.topicsData.push(new DocNode(topic._id, topic.name, 'root', 'folder', ''));
+                    this.topicsData.push(new DocNode(topic._id, topic.name, 'root', 'folder', '', '-1'));
                 }
             }
         } catch (err) {
