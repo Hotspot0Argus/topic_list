@@ -217,7 +217,10 @@ export function activate(context: vscode.ExtensionContext) {
 			await httpRequest.patch(uri, {
 				name: info.name
 			});
-
+			const index = articleList.findIndex((item) => {
+				return item === node.id;
+			});
+			articleList.splice(index, 1);
 			vscode.window.showInformationMessage('修改成功');
 			topicListProvider.refresh();
 			return;
