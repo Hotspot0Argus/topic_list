@@ -228,7 +228,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const info = await user.inputInfo([{ label: '新的组内位置（从 1 开始）', field: 'position' }]);
 		const uri = setting.uri + 'topics/' + node.topic + '/contents/' + node.id + '/position';
 		try {
-			const result = await httpRequest.patch(uri, {
+			await httpRequest.patch(uri, {
 				position: info.position
 			});
 
@@ -260,7 +260,7 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 
 			const result = await httpRequest.get(uri);
-	
+
 			const markdown = type === 'markdown' ? result.body.data.markdown : '#  题目部分:\n' + result.body.data.markdown_content + '\n#  讲解部分:\n' + result.body.data.markdown_explanation;
 
 			fs.mkdir(path, 0o777, function (err) {
@@ -312,7 +312,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	});
 
-	context.subscriptions.push(signIn, signOut, refresh, uploadMarkdown, updateArticle, refreshList, uploadImg, newFolder, deleteNode, editContent, sortNode, getContent, uploadProblem,
+	context.subscriptions.push(signIn, signOut, refresh, uploadMarkdown, uploadProblem, updateArticle, refreshList, uploadImg, newFolder, deleteNode, editContent, sortNode, getContent,
 		vscode.window.registerTreeDataProvider("topic", topicListProvider));
 	topicListProvider.refresh();
 }

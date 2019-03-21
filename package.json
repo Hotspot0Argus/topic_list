@@ -64,8 +64,8 @@
 				"command": "python123.uploadProblem",
 				"title": "添加已有习题",
 				"icon": {
-					"light": "media/light/upload.svg",
-					"dark": "media/dark/upload.svg"
+					"light": "media/light/addProblem.svg",
+					"dark": "media/dark/addProblem.svg"
 				}
 			},
 			{
@@ -90,11 +90,7 @@
 			},
 			{
 				"command": "python123.editContent",
-				"title": "编辑标题",
-				"icon": {
-					"light": "media/light/edit.svg",
-					"dark": "media/dark/edit.svg"
-				}
+				"title": "编辑标题"
 			},
 			{
 				"command": "python123.sortNode",
@@ -108,8 +104,8 @@
 				"command": "python123.updateArticle",
 				"title": "保存更改",
 				"icon": {
-					"light": "media/light/upload.svg",
-					"dark": "media/dark/upload.svg"
+					"light": "media/light/save.svg",
+					"dark": "media/dark/save.svg"
 				}
 			}
 		],
@@ -131,22 +127,7 @@
 			],
 			"view/item/context": [
 				{
-					"command": "python123.newFolder",
-					"when": "view == topic && viewItem == folder",
-					"group": "inline"
-				},
-				{
-					"command": "python123.newFolder",
-					"when": "view == topic && viewItem == topic",
-					"group": "inline"
-				},
-				{
 					"command": "python123.uploadMarkdown",
-					"when": "view == topic && viewItem == folder",
-					"group": "inline"
-				},
-				{
-					"command": "python123.uploadProblem",
 					"when": "view == topic && viewItem == folder",
 					"group": "inline"
 				},
@@ -160,6 +141,12 @@
 					"when": "view == topic && viewItem == topic",
 					"group": "inline"
 				},
+				{
+					"command": "python123.uploadProblem",
+					"when": "view == topic && viewItem == folder",
+					"group": "inline"
+				},
+				
 				{
 					"command": "python123.deleteNode",
 					"when": "view == topic && viewItem == folder "
@@ -167,6 +154,10 @@
 				{
 					"command": "python123.deleteNode",
 					"when": "view == topic && viewItem == markdown "
+				},
+				{
+					"command": "python123.deleteNode",
+					"when": "view == topic && viewItem == problem "
 				},
 				{
 					"command": "python123.updateArticle",
@@ -182,12 +173,30 @@
 					"when": "view == topic && viewItem == markdown "
 				},
 				{
+					"command": "python123.sortNode",
+					"when": "view == topic && viewItem == problem "
+				},
+				{
 					"command": "python123.editContent",
 					"when": "view == topic && viewItem == folder "
 				},
 				{
 					"command": "python123.editContent",
 					"when": "view == topic && viewItem == markdown "
+				},
+				{
+					"command": "python123.editContent",
+					"when": "view == topic && viewItem == problem "
+				},
+				{
+					"command": "python123.newFolder",
+					"when": "view == topic && viewItem == folder",
+					"group": "inline"
+				},
+				{
+					"command": "python123.newFolder",
+					"when": "view == topic && viewItem == topic",
+					"group": "inline"
 				}
 			]
 		},
