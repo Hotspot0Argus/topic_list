@@ -23,6 +23,7 @@
 		"onCommand:python123.sortNode",
 		"onCommand:python123.getContent",
 		"onCommand:python123.updateArticle",
+		"onCommand:python123.showIntro",
 		"onView:topic"
 	],
 	"main": "./out/extension.js",
@@ -45,6 +46,10 @@
 				"title": "刷新缓存 "
 			},
 			{
+				"command": "python123.showIntro",
+				"title": "查看使用说明 "
+			},
+			{
 				"command": "python123.refresh",
 				"title": "刷新",
 				"icon": {
@@ -54,7 +59,7 @@
 			},
 			{
 				"command": "python123.uploadMarkdown",
-				"title": "上传 MarkDown 文件",
+				"title": "上传已打开 MarkDown/Ipynb 文件到当前目录",
 				"icon": {
 					"light": "media/light/upload.svg",
 					"dark": "media/dark/upload.svg"
@@ -123,6 +128,10 @@
 				{
 					"command": "python123.refreshList",
 					"when": "view == topic"
+				},
+				{
+					"command": "python123.showIntro",
+					"when": "view == topic"
 				}
 			],
 			"view/item/context": [
@@ -146,7 +155,6 @@
 					"when": "view == topic && viewItem == folder",
 					"group": "inline"
 				},
-				
 				{
 					"command": "python123.deleteNode",
 					"when": "view == topic && viewItem == folder "
@@ -158,6 +166,10 @@
 				{
 					"command": "python123.deleteNode",
 					"when": "view == topic && viewItem == problem "
+				},
+				{
+					"command": "python123.deleteNode",
+					"when": "view == topic && viewItem == ipynb"
 				},
 				{
 					"command": "python123.updateArticle",
@@ -165,8 +177,17 @@
 					"group": "inline"
 				},
 				{
+					"command": "python123.updateArticle",
+					"when": "view == topic && viewItem == ipynb ",
+					"group": "inline"
+				},
+				{
 					"command": "python123.sortNode",
-					"when": "view == topic && viewItem == folder "
+					"when": "view == topic && viewItem == folder"
+				},
+				{
+					"command": "python123.sortNode",
+					"when": "view == topic && viewItem == ipynb"
 				},
 				{
 					"command": "python123.sortNode",
@@ -187,6 +208,10 @@
 				{
 					"command": "python123.editContent",
 					"when": "view == topic && viewItem == problem "
+				},
+				{
+					"command": "python123.editContent",
+					"when": "view == topic && viewItem == ipynb"
 				},
 				{
 					"command": "python123.newFolder",

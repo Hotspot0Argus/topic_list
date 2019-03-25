@@ -74,7 +74,7 @@ export class TopicListProvider implements vscode.TreeDataProvider<DocNode> {
             };
         } else {
             return {
-                label: '- ' + element.name,
+                label: '- ' + (element.type === 'markdown' ? '' : (element.type === 'ipynb' ? '[I]' : '[P] ')) + element.name,
                 id: element.id,
                 parent: element.parent,
                 topic: element.topic,
