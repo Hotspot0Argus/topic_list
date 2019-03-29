@@ -69,25 +69,26 @@ class User {
             for (let i = 0; i < list.length - 1; i++) {
                 const content: string | undefined = await vscode.window.showInputBox({
                     prompt: "输入" + list[i].label,
-                    validateInput: (s: string): string | undefined => s && s.trim() ? undefined : list[i].label + "不能为空",
+                    validateInput: (s: string): string | undefined => (s && s.trim() || (list[i].empty || false)) ? '' : list[i].label + "不能为空",
                 });
-                if (!content) {
+                if (!content && !(list[i].empty || false)) {
                     return;
                 }
                 result += ('"' + list[i].field + '":"' + content + '",');
             }
             const content: string | undefined = await vscode.window.showInputBox({
                 prompt: "输入" + list[list.length - 1].label,
-                validateInput: (s: string): string | undefined => s && s.trim() ? undefined : list[list.length - 1].label + "不能为空",
+                validateInput: (s: string): string | undefined => (s && s.trim() || (list[list.length - 1].empty || false)) ? '' : list[list.length - 1].label + "不能为空",
             });
-            if (!content) {
+            if (!content && !(list[list.length - 1].empty || false)) {
                 return;
             }
             result += ('"' + list[list.length - 1].field + '":"' + content + '"}');
             return JSON.parse(result);
 
         } catch (err) {
-            return { err };
+            console.log(err);
+            return {};
         }
 
     }

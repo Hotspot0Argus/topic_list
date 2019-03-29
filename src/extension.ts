@@ -98,7 +98,7 @@ export function activate(context: vscode.ExtensionContext) {
 					});
 				} else if (window.document.uri.fsPath.split('.')[window.document.uri.fsPath.split('.').length - 1] === "ipynb") {
 					articleResult = await httpRequest.post(uri, {
-						content: articleContent,
+						ipynb: articleContent,
 						name: name,
 						type: 'ipynb',
 						parent: node.id
@@ -107,16 +107,16 @@ export function activate(context: vscode.ExtensionContext) {
 				vscode.window.showInformationMessage('文件 ' + name + ' 上传成功' + (articleResult.data || ''));
 				topicListProvider.refresh();
 				return;
-			} catch (err) { vscode.window.showErrorMessage('文件上传失败'); }
+			} catch (err) { vscode.window.showErrorMessage('文件上传失败'); console.log(err); }
 		}
 		else {
 			vscode.window.showErrorMessage('未在打开的窗口中检测到 MarkDown 文件或 ipynb 文件');
 		}
 	});
 	const uploadProblem = vscode.commands.registerCommand('python123.uploadProblem', async (node: DocNode) => {
-		const problemInfo = await user.inputInfo([{ label: '习题名称名称', field: 'name' }, { label: '习题编号', field: 'id' }]);
+		const problemInfo = await user.inputInfo([{ label: '习题名称(为空默认使用习题标题)', field: 'name', empty: true }, { label: '习题编号', field: 'id' }]);
 		const topicId = node.topic;
-		if (!problemInfo.name || !problemInfo.id) { return; }
+		if (!problemInfo.id) { return; }
 		const uri = setting.uri + 'topics/' + topicId + '/contents';
 		try {
 			await httpRequest.post(uri, {
@@ -128,7 +128,7 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showInformationMessage('添加成功');
 			topicListProvider.refresh();
 			return;
-		} catch (err) { vscode.window.showErrorMessage('添加失败, 您可能不具有该题目的使用权'); }
+		} catch (err) { vscode.window.showErrorMessage('添加失败, 只能添加拥有使用权的选择题和编程题'); }
 
 	});
 
@@ -280,7 +280,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 			let content: string = '';
 			switch (type) {
-				case 'ipynb': content = result.body.data.content; break;
+				case 'ipynb': content = result.body.data.ipynb; break;
 				case 'markdown': content = result.body.data.markdown; break;
 				case 'problem': content = '#  题目部分:\n' + (result.body.data.markdown_content || '无内容') + '\n#  讲解部分:\n' + (result.body.data.markdown_explanation || '无内容'); break;
 			}
@@ -307,7 +307,7 @@ export function activate(context: vscode.ExtensionContext) {
 				vscode.window.showTextDocument(doc);
 				return;
 			}
-		} catch (e) { vscode.window.showErrorMessage('加载当前文章失败,建议清空缓存后重新点击查看。'); console.log(e); }
+		} catch (e) { vscode.window.showErrorMessage('加载当前文章失败,建议清空缓存后重新点击查看。');}
 	}
 	const updateArticle = vscode.commands.registerCommand('python123.updateArticle', async (node: DocNode) => {
 		try {
@@ -316,12 +316,17 @@ export function activate(context: vscode.ExtensionContext) {
 			let uri: string = '';
 			switch (node.type) {
 				case 'markdown': uri = setting.uri + 'articles/' + node.id + '/markdown'; break;
-				case 'ipynb': uri = setting.uri + 'articles/' + node.id; break;
+				case 'ipynb': uri = setting.uri + 'articles/' + node.id + '/ipynb'; break;
 			}
 
-			await httpRequest.patch(uri, {
-				content: doc.getText()
-			});
+			let options = {};
+			switch (node.type) {
+				case 'markdown': options = { markdown: doc.getText() }; break;
+				case 'ipynb': options = { ipynb: doc.getText() }; break;
+			}
+
+
+			await httpRequest.patch(uri, options);
 
 
 			const index = articleList.findIndex((item) => {
@@ -334,6 +339,7 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 
 		} catch (e) {
+			console.log(e);
 			vscode.window.showErrorMessage('更新失败,请检查是否已经对该文章做过修改');
 		}
 
